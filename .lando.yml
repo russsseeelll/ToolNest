@@ -1,0 +1,4 @@
+name: uofgcoseittools
+recipe: laravel
+config:
+  webroot: public
