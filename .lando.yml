@@ -2,3 +2,7 @@ name: uofgcoseittools
 recipe: laravel
 config:
   webroot: public
+
+events:
+  post-start:
+    - php artisan migrate:fresh --seed
