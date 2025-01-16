@@ -9,31 +9,37 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use App\Models\News;
 
 class ToolController extends Controller
 {
 
     public function index(Request $request)
     {
-
         $search = $request->input('search');
-
         $user = auth()->user();
-
         $userGroupIds = $user->groups->pluck('id')->toArray();
 
-        $tools = Tool::when($search, function($query, $search) {
+        $tools = Tool::when($search, function ($query, $search) {
             return $query->where('name', 'LIKE', '%' . $search . '%');
         })
-            ->whereHas('groups', function($query) use ($userGroupIds) {
+            ->whereHas('groups', function ($query) use ($userGroupIds) {
                 $query->whereIn('groups.id', $userGroupIds);
             })
             ->paginate(8);
 
         $tools->appends(['search' => $search]);
 
-        return view('home', compact('tools', 'search'));
+        $techNews = News::inRandomOrder()->limit(5)->get();
+
+        return view('home', compact('tools', 'search', 'techNews'));
     }
+
+
+
 
     public function manage(Request $request, Tool $tool = null)
     {

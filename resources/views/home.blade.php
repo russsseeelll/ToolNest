@@ -43,50 +43,33 @@
             @endif
         </div>
 
-        <!-- Sidebar: Latest Ivanti Tickets -->
+        <!-- Sidebar: Latest Tech News -->
         <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
-            <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6 ticket-box">
-                <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Ivanti Tickets</h2>
-                <div class="space-y-2 h-full overflow-y-auto">
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                        <p><span class="font-semibold">Ticket Ref:</span> 100578</p>
-                        <p><span class="font-semibold">Name:</span> Michael Scott</p>
-                        <p><span class="font-semibold">Subject:</span> Printer setup</p>
-                        <p><span class="font-semibold">Timestamp:</span> 01/09/24, 01:00pm</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                        <p><span class="font-semibold">Ticket Ref:</span> 100577</p>
-                        <p><span class="font-semibold">Name:</span> Alice Brown</p>
-                        <p><span class="font-semibold">Subject:</span> VPN not connecting</p>
-                        <p><span class="font-semibold">Timestamp:</span> 01/09/24, 12:30pm</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                        <p><span class="font-semibold">Ticket Ref:</span> 100576</p>
-                        <p><span class="font-semibold">Name:</span> Jane Smith</p>
-                        <p><span class="font-semibold">Subject:</span> Software installation request</p>
-                        <p><span class="font-semibold">Timestamp:</span> 01/09/24, 11:45am</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                        <p><span class="font-semibold">Ticket Ref:</span> 100575</p>
-                        <p><span class="font-semibold">Name:</span> John Doe</p>
-                        <p><span class="font-semibold">Subject:</span> Access to shared drive</p>
-                        <p><span class="font-semibold">Timestamp:</span> 01/09/24, 11:00am</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                        <p><span class="font-semibold">Ticket Ref:</span> 100574</p>
-                        <p><span class="font-semibold">Name:</span> Sarah Phillips</p>
-                        <p><span class="font-semibold">Subject:</span> Password reset</p>
-                        <p><span class="font-semibold">Timestamp:</span> 01/09/24, 10:20am</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                        <p><span class="font-semibold">Ticket Ref:</span> 100573</p>
-                        <p><span class="font-semibold">Name:</span> Russell McInnes</p>
-                        <p><span class="font-semibold">Subject:</span> I need a new monitor</p>
-                        <p><span class="font-semibold">Timestamp:</span> 01/09/24, 09:15am</p>
-                    </div>
-
+            <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Tech News</h2>
+                <div id="news-section" class="space-y-2 max-h-[600px] overflow-y-auto">
+                    @if($techNews->isNotEmpty())
+                        @foreach($techNews as $news)
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
+                                <a href="{{ $news->url }}" target="_blank" class="block">
+                                    <p class="font-semibold">{{ $news->title }}</p>
+                                    <p class="text-sm text-gray-600">{{ $news->description }}</p>
+                                </a>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span class="font-semibold">Source:</span> {{ $news->source_name }}
+                                    <br>
+                                    <span class="font-semibold">Published:</span> {{ \Carbon\Carbon::parse($news->published_at)->format('d/m/Y, h:i A') }}
+                                </p>
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-center text-gray-500">No tech news available at the moment.</p>
+                    @endif
                 </div>
             </div>
         </aside>
+
+
+
     </main>
 @endsection

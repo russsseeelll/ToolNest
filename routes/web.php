@@ -7,6 +7,8 @@ use App\Http\Middleware\CheckGuid;
 Route::middleware([CheckGuid::class])->group(function () {
     Route::get('/', [ToolController::class, 'index'])->name('home');
 
+    Route::get('/fetch-news', [ToolController::class, 'fetchNewsAjax'])->name('fetch.news');
+
     // Manage Route (For both tools and users management)
     Route::get('/manage', [ToolController::class, 'manage'])->name('manage');
 
@@ -26,3 +28,4 @@ Route::middleware([CheckGuid::class])->group(function () {
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
+
