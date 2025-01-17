@@ -5,6 +5,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckGuid;
 use App\Http\Middleware\AdminMiddleware;
+use App\Console\Commands\FetchTechNews;
+
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
