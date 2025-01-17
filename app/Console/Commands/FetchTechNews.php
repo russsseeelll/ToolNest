@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\News;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class FetchTechNews extends Command
 {
@@ -21,7 +22,7 @@ class FetchTechNews extends Command
      *
      * @var string
      */
-    protected $description = 'Fetch and store the latest tech news articles';
+    protected $description = 'Fetch and store 20 random tech news articles';
 
     /**
      * Execute the console command.
@@ -46,7 +47,7 @@ class FetchTechNews extends Command
                 'to' => $to,
                 'language' => 'en',
                 'sortBy' => 'publishedAt',
-                'pageSize' => 5,
+                'pageSize' => 20,
             ]);
 
             if (!$response->successful()) {
@@ -56,14 +57,24 @@ class FetchTechNews extends Command
 
             $articles = $response->json('articles') ?? [];
 
+            // Clear the news table
+            $this->info('Truncating the news table...');
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            News::truncate();
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+            $this->info('Inserting articles into the database...');
             foreach ($articles as $article) {
-                $this->info("Title: " . ($article['title'] ?? 'No Title'));
-                $this->info("Description: " . ($article['description'] ?? 'No Description'));
-                $this->info("URL: " . $article['url']);
-                $this->info("Source: " . ($article['source']['name'] ?? 'Unknown') . "\n");
+                News::create([
+                    'title' => $article['title'] ?? 'No Title',
+                    'description' => $article['description'] ?? '',
+                    'url' => $article['url'],
+                    'source_name' => $article['source']['name'] ?? 'Unknown',
+                    'published_at' => $article['publishedAt'] ?? now(),
+                ]);
             }
 
-            $this->info('Successfully fetched tech news articles.');
+            $this->info('Successfully fetched and stored 20 tech news articles.');
         } catch (\Exception $e) {
             $this->error('Error fetching tech news: ' . $e->getMessage());
             Log::error('FetchTechNews command failed.', ['error' => $e->getMessage()]);
