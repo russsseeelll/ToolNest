@@ -47,13 +47,13 @@
         <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
             <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Tech News</h2>
-                <div id="news-section" class="space-y-4 max-h-[600px] overflow-y-auto">
+                <div id="news-section" class="space-y-4 max-h-[700px] overflow-y-auto">
                     @if($techNews->isNotEmpty())
                         @foreach($techNews as $news)
                             <div class="bg-gray-100 p-4 rounded-lg border border-gray-300 shadow-sm hover:shadow-lg transition-shadow duration-200">
                                 <a href="{{ $news->url }}" target="_blank" class="block">
                                     <h3 class="font-semibold text-lg mb-2 truncate">{{ $news->title }}</h3>
-                                    <p class="text-sm text-gray-700 mb-2 truncate">{{ $news->description }}</p>
+                                    <p class="text-sm text-gray-700 mb-4">{{ Str::limit($news->description, 200) }}</p>
                                 </a>
                                 <div class="mt-2 text-xs text-gray-600 flex justify-between">
                                     <span><strong>Source:</strong> {{ $news->source_name }}</span>
@@ -69,4 +69,42 @@
             </div>
         </aside>
     </main>
+
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .pagination a, .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #003865;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #003865;
+            background-color: white;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .pagination a:hover {
+            background-color: #003865;
+            color: white;
+        }
+
+        .pagination .active {
+            background-color: #003865;
+            color: white;
+            font-weight: bold;
+        }
+
+        .pagination .disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .pagination a, .pagination span {
+            scroll-margin-top: 2rem; /* Keeps pagination links in view after clicking */
+        }
+    </style>
 @endsection
