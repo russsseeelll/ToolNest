@@ -22,7 +22,7 @@ class FetchTechNews extends Command
      *
      * @var string
      */
-    protected $description = 'Fetch and store 20 random tech news articles focused on education and new technologies';
+    protected $description = 'Fetch and store 20 random tech news articles focused on education and new technologies, broadening search if necessary';
 
     /**
      * Execute the console command.
@@ -33,15 +33,19 @@ class FetchTechNews extends Command
 
         $apiKey = '38b207b9cf2b49f4ac9f78b0951d9a28';
         $url = 'https://newsapi.org/v2/everything';
-        $keywords = 'education technology, edtech, new technology, AI in education, VR in education, robotics in classrooms, future of learning, smart classrooms';
-        $domains = 'edtechmagazine.com,educationaltechnology.net,techlearning.com,elearningindustry.com,insidehighered.com,thejournal.com';
+        $primaryKeywords = 'education technology, edtech, new technology, AI in education, VR in education, robotics in classrooms, future of learning, smart classrooms';
+        $secondaryKeywords = 'infrastructure, NVIDIA, AI research, cloud computing, data centers, semiconductor advancements, 5G technology, quantum computing, machine learning, AR and VR, IoT, tech startups, developer tools, networking';
+        $domains = 'edtechmagazine.com,educationaltechnology.net,techlearning.com,elearningindustry.com,insidehighered.com,thejournal.com,techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com,gizmodo.com,cnet.com,zdnet.com,techradar.com,digitaltrends.com';
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
         try {
+            $articles = [];
+
+            // First pass: Primary keywords
             $response = Http::timeout(10)->get($url, [
                 'apiKey' => $apiKey,
-                'q' => $keywords,
+                'q' => $primaryKeywords,
                 'domains' => $domains,
                 'from' => $from,
                 'to' => $to,
@@ -50,12 +54,30 @@ class FetchTechNews extends Command
                 'pageSize' => 20,
             ]);
 
-            if (!$response->successful()) {
-                $this->error('Failed to fetch news. Response: ' . $response->body());
-                return 1;
+            if ($response->successful()) {
+                $articles = $response->json('articles') ?? [];
             }
 
-            $articles = $response->json('articles') ?? [];
+            // If not enough articles, broaden the search
+            if (count($articles) < 20) {
+                $this->info('Broadening search with secondary keywords...');
+
+                $response = Http::timeout(10)->get($url, [
+                    'apiKey' => $apiKey,
+                    'q' => $secondaryKeywords,
+                    'domains' => $domains,
+                    'from' => $from,
+                    'to' => $to,
+                    'language' => 'en',
+                    'sortBy' => 'publishedAt',
+                    'pageSize' => 20 - count($articles),
+                ]);
+
+                if ($response->successful()) {
+                    $additionalArticles = $response->json('articles') ?? [];
+                    $articles = array_merge($articles, $additionalArticles);
+                }
+            }
 
             // Clear the news table
             $this->info('Truncating the news table...');
