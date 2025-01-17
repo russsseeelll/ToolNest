@@ -22,7 +22,7 @@ class FetchTechNews extends Command
      *
      * @var string
      */
-    protected $description = 'Fetch and store 20 random tech news articles focused on education and new technologies';
+    protected $description = 'Fetch and store 20 random tech news articles';
 
     /**
      * Execute the console command.
@@ -33,38 +33,23 @@ class FetchTechNews extends Command
 
         $apiKey = '38b207b9cf2b49f4ac9f78b0951d9a28';
         $url = 'https://newsapi.org/v2/everything';
-        $primaryKeywords = 'education technology, edtech, AI in education, robotics in classrooms, smart classrooms';
-        $secondaryKeywords = 'infrastructure, NVIDIA, AI research, cloud computing, data centers, machine learning, AR and VR, IoT';
-        $domains = 'edtechmagazine.com,techlearning.com,elearningindustry.com,insidehighered.com,thejournal.com,techcrunch.com,thenextweb.com,wired.com';
+        $keywordsList = [
+            'education technology', 'edtech', 'AI in education', 'robotics in classrooms', 'smart classrooms',
+            'infrastructure', 'NVIDIA', 'AI research', 'cloud computing', 'data centers',
+            'machine learning', 'AR and VR', 'IoT', 'developer tools'
+        ];
+        $domains = 'techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com';
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
         $articles = [];
 
         try {
-            // First attempt with primary keywords
-            $this->info('Searching with primary keywords...');
-            $response = Http::timeout(10)->get($url, [
-                'apiKey' => $apiKey,
-                'q' => $primaryKeywords,
-                'domains' => $domains,
-                'from' => $from,
-                'to' => $to,
-                'language' => 'en',
-                'sortBy' => 'publishedAt',
-                'pageSize' => 20,
-            ]);
-
-            if ($response->successful()) {
-                $articles = $response->json('articles') ?? [];
-            }
-
-            // If not enough articles, broaden search
-            if (count($articles) < 20) {
-                $this->info('Broadening search with secondary keywords...');
+            foreach ($keywordsList as $keywords) {
+                $this->info("Searching with keywords: {$keywords}...");
                 $response = Http::timeout(10)->get($url, [
                     'apiKey' => $apiKey,
-                    'q' => $secondaryKeywords,
+                    'q' => $keywords,
                     'domains' => $domains,
                     'from' => $from,
                     'to' => $to,
@@ -74,12 +59,15 @@ class FetchTechNews extends Command
                 ]);
 
                 if ($response->successful()) {
-                    $additionalArticles = $response->json('articles') ?? [];
-                    $articles = array_merge($articles, $additionalArticles);
+                    $fetchedArticles = $response->json('articles') ?? [];
+                    $articles = array_merge($articles, $fetchedArticles);
+                }
+
+                if (count($articles) >= 20) {
+                    break;
                 }
             }
 
-            // Check if articles are found
             if (empty($articles)) {
                 $this->error('No articles found for the given search criteria.');
                 return 1;

@@ -47,19 +47,18 @@
         <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
             <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Tech News</h2>
-                <div id="news-section" class="space-y-2 max-h-[600px] overflow-y-auto">
+                <div id="news-section" class="space-y-4 max-h-[600px] overflow-y-auto">
                     @if($techNews->isNotEmpty())
                         @foreach($techNews as $news)
-                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                                <a href="{{ $news->url }}" target="_blank" class="block">
-                                    <p class="font-semibold">{{ $news->title }}</p>
-                                    <p class="text-sm text-gray-600">{{ $news->description }}</p>
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-300 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                <a href="{{ $news->url }}" target="_blank" class="block hover:text-[#003865]">
+                                    <h3 class="font-semibold text-base mb-1 truncate">{{ $news->title }}</h3>
+                                    <p class="text-sm text-gray-600 truncate">{{ $news->description }}</p>
                                 </a>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <span class="font-semibold">Source:</span> {{ $news->source_name }}
-                                    <br>
-                                    <span class="font-semibold">Published:</span> {{ \Carbon\Carbon::parse($news->published_at)->format('d/m/Y, h:i A') }}
-                                </p>
+                                <div class="mt-2 text-xs text-gray-500">
+                                    <p><span class="font-semibold">Source:</span> {{ $news->source_name }}</p>
+                                    <p><span class="font-semibold">Published:</span> {{ \Carbon\Carbon::parse($news->published_at)->format('d/m/Y, h:i A') }}</p>
+                                </div>
                             </div>
                         @endforeach
                     @else
@@ -68,8 +67,5 @@
                 </div>
             </div>
         </aside>
-
-
-
     </main>
 @endsection
