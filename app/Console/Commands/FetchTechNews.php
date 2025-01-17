@@ -70,7 +70,10 @@ class FetchTechNews extends Command
                     'description' => $article['description'] ?? '',
                     'url' => $article['url'],
                     'source_name' => $article['source']['name'] ?? 'Unknown',
-                    'published_at' => $article['publishedAt'] ?? now(),
+                    // Convert ISO 8601 datetime to MySQL-compatible format
+                    'published_at' => isset($article['publishedAt'])
+                        ? date('Y-m-d H:i:s', strtotime($article['publishedAt']))
+                        : now(),
                 ]);
             }
 
