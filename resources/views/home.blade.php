@@ -38,9 +38,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-6 flex justify-center">
-                    <div class="inline-flex items-center space-x-2 border border-gray-300 rounded-lg shadow-md p-2 bg-gray-50">
-                        {{ $tools->onEachSide(1)->links('pagination::tailwind') }}
-                    </div>
+                    {{ $tools->onEachSide(1)->links('pagination::tailwind') }}
                 </div>
             @endif
         </div>
@@ -49,7 +47,7 @@
         <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
             <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Tech News</h2>
-                <div id="news-section" class="space-y-4 max-h-[700px] overflow-y-auto">
+                <div id="news-section" class="space-y-4 max-h-[600px] overflow-y-auto">
                     @if($techNews->isNotEmpty())
                         @foreach($techNews as $news)
                             <div class="bg-gray-100 p-4 rounded-lg border border-gray-300 shadow-sm hover:shadow-lg transition-shadow duration-200">
