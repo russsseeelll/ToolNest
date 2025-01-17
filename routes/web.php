@@ -30,5 +30,5 @@ Route::middleware([CheckGuid::class])->group(function () {
 });
 
 Route::get('/unauthorized', function () {
-    return response()->view('errors.unauthorized', [], 403);
+    return response()->view('unauthorized', [], 403);
 })->name('unauthorized');
