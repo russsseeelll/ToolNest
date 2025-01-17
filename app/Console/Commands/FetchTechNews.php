@@ -22,7 +22,7 @@ class FetchTechNews extends Command
      *
      * @var string
      */
-    protected $description = 'Fetch and store 20 random tech news articles';
+    protected $description = 'Fetch and store 20 random tech news articles focused on education and new technologies';
 
     /**
      * Execute the console command.
@@ -33,8 +33,8 @@ class FetchTechNews extends Command
 
         $apiKey = '38b207b9cf2b49f4ac9f78b0951d9a28';
         $url = 'https://newsapi.org/v2/everything';
-        $keywords = 'technology';
-        $domains = 'techcrunch.com,thenextweb.com,wired.com';
+        $keywords = 'education technology, edtech, new technology, AI in education, VR in education, robotics in classrooms, future of learning, smart classrooms';
+        $domains = 'edtechmagazine.com,educationaltechnology.net,techlearning.com,elearningindustry.com,insidehighered.com,thejournal.com';
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
@@ -70,7 +70,6 @@ class FetchTechNews extends Command
                     'description' => $article['description'] ?? '',
                     'url' => $article['url'],
                     'source_name' => $article['source']['name'] ?? 'Unknown',
-                    // Convert ISO 8601 datetime to MySQL-compatible format
                     'published_at' => isset($article['publishedAt'])
                         ? date('Y-m-d H:i:s', strtotime($article['publishedAt']))
                         : now(),
