@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\News;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FetchTechNews extends Command
 {
@@ -14,35 +15,63 @@ class FetchTechNews extends Command
 
     public function handle()
     {
-        ini_set('memory_limit', '-1');
-        $this->info('Memory limit disabled.');
-        $this->logInfo('Starting to fetch tech news...');
-        $this->info('Current memory usage: ' . memory_get_usage(true) . ' bytes');
+        // Increase memory limit for the script
+        ini_set('memory_limit', '512M');
+
+        $this->info('Starting to fetch tech news...');
+        Log::info('Tech news fetch started.');
 
         $apiKey = '38b207b9cf2b49f4ac9f78b0951d9a28';
         $url = 'https://newsapi.org/v2/everything';
-        $keywords = ['technology']; // Start with a single keyword for testing
+
+        $keywords = [
+            'artificial intelligence', 'machine learning', 'blockchain', 'quantum computing',
+            'cybersecurity', 'cloud computing', 'programming languages', 'web development',
+            'startup innovations', 'tech gadgets', 'infrastructure', 'data centers',
+            '5G technology', 'networking', 'IoT', 'AR and VR', 'mobile technology',
+            'semiconductors', 'edge computing', 'robotics', 'technology trends', 'developer tools'
+        ];
+
         $domains = implode(',', [
             'techcrunch.com',
             'thenextweb.com',
             'wired.com',
             'engadget.com',
+            'arstechnica.com',
+            'theverge.com',
+            'venturebeat.com',
+            'gizmodo.com',
+            'cnet.com',
+            'zdnet.com',
+            'techradar.com',
+            'tomshardware.com',
+            'digitaltrends.com',
+            'pcmag.com',
+            'slashdot.org'
         ]);
+
         $today = now()->toDateString();
         $yesterday = now()->subDay()->toDateString();
 
-        try {
-            $this->logInfo('Truncating the news table...');
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-            News::truncate();
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        $this->info('Truncating the news table...');
+        Log::info('Truncating news table.');
 
-            $this->logInfo('Fetching articles...');
-            $articles = [];
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        News::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-            foreach ($keywords as $keyword) {
-                $this->logInfo("Fetching news for keyword: $keyword...");
+        $articles = [];
+        shuffle($keywords);
 
+        foreach ($keywords as $keyword) {
+            if (count($articles) >= 20) {
+                break;
+            }
+
+            $this->info("Fetching news for keyword: $keyword...");
+            Log::info("Fetching news for keyword: $keyword");
+
+            try {
                 $response = Http::timeout(10)->get($url, [
                     'apiKey' => $apiKey,
                     'q' => $keyword,
@@ -51,60 +80,54 @@ class FetchTechNews extends Command
                     'to' => $today,
                     'language' => 'en',
                     'sortBy' => 'publishedAt',
-                    'pageSize' => 1,
+                    'pageSize' => 5,
                 ]);
 
-                if ($response->successful()) {
-                    $this->logInfo("API response received successfully for keyword: $keyword.");
-                    $fetchedArticles = $response->json('articles') ?? [];
+                if (!$response->successful()) {
+                    throw new \Exception("Failed to fetch news: " . $response->body());
+                }
 
-                    foreach ($fetchedArticles as $article) {
-                        $articles[] = [
-                            'title' => $article['title'] ?? 'No Title',
-                            'description' => $article['description'] ?? '',
-                            'url' => $article['url'],
-                            'source_name' => $article['source']['name'] ?? 'Unknown',
-                            'published_at' => $article['publishedAt'],
-                        ];
+                $fetchedArticles = $response->json('articles') ?? [];
+
+                foreach ($fetchedArticles as $article) {
+                    if (count($articles) >= 20) {
+                        break;
                     }
 
-                    $this->logInfo('Articles fetched: ' . json_encode($articles, JSON_PRETTY_PRINT));
-                } else {
-                    $this->logError("Failed to fetch news for keyword: $keyword.");
-                    $this->logError('Response body: ' . $response->body());
+                    $articles[] = [
+                        'title' => $article['title'] ?? 'No Title',
+                        'description' => $article['description'] ?? '',
+                        'url' => $article['url'],
+                        'source_name' => $article['source']['name'] ?? 'Unknown',
+                        'published_at' => $article['publishedAt'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
                 }
-            }
 
-            if (!empty($articles)) {
-                $this->logInfo('Saving articles to the database...');
-                News::insert($articles);
-                $this->logInfo('Articles saved successfully.');
-            } else {
-                $this->logWarning('No articles were fetched.');
+                $this->info("Fetched articles for keyword: $keyword.");
+                Log::info("Fetched articles for keyword: $keyword", ['count' => count($fetchedArticles)]);
+            } catch (\Exception $e) {
+                $this->error("Error fetching news for keyword: $keyword");
+                Log::error("Error fetching news for keyword: $keyword", ['message' => $e->getMessage()]);
+            }
+        }
+
+        if (!empty($articles)) {
+            $this->info('Saving articles to the database...');
+            Log::info('Saving articles to the database.', ['count' => count($articles)]);
+
+            foreach (array_chunk($articles, 5) as $chunk) {
+                News::insert($chunk);
             }
 
             $this->info('Successfully fetched and stored tech news articles.');
-        } catch (\Throwable $e) {
-            $this->logError('Error occurred: ' . $e->getMessage());
-            $this->logError('Trace: ' . $e->getTraceAsString());
+            Log::info('Successfully fetched and stored tech news articles.');
+        } else {
+            $this->error('No articles were fetched.');
+            Log::warning('No articles were fetched.');
         }
-    }
 
-    private function logInfo(string $message)
-    {
-        $this->info($message);
-        \Log::info($message);
-    }
-
-    private function logError(string $message)
-    {
-        $this->error($message);
-        \Log::error($message);
-    }
-
-    private function logWarning(string $message)
-    {
-        $this->warn($message);
-        \Log::warning($message);
+        return 0;
     }
 }
