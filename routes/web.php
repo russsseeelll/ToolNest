@@ -29,3 +29,6 @@ Route::middleware([CheckGuid::class])->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
+Route::get('/unauthorized', function () {
+    return response()->view('errors.unauthorized', [], 403);
+})->name('unauthorized');
