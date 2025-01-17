@@ -52,7 +52,7 @@
                         @foreach($techNews as $news)
                             <div class="bg-gray-100 p-4 rounded-lg border border-gray-300 shadow-sm hover:shadow-lg transition-shadow duration-200">
                                 <a href="{{ $news->url }}" target="_blank" class="block">
-                                    <h3 class="font-semibold text-lg mb-2 truncate">{{ $news->title }}</h3>
+                                    <h3 class="font-semibold text-lg mb-2">{{ $news->title }}</h3>
                                     <p class="text-sm text-gray-700 mb-2 truncate">{{ $news->description }}</p>
                                 </a>
                                 <div class="mt-2 text-xs text-gray-600 flex justify-between">
