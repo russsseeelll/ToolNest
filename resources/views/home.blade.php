@@ -47,10 +47,10 @@
                                         <h2 class="text-lg font-semibold truncate">{{ $tool->name }}</h2>
                                     </div>
                                 </a>
-
                                 @if(!empty($tool->info))
                                     <button
-                                        class="absolute top-2 right-2 group text-white text-lg focus:outline-none"
+                                        class="absolute top-2 right-2 text-white text-lg focus:outline-none flex items-center justify-center w-8 h-8 rounded-full border border-white/50 hover:border-white/70"
+                                        style="background-color: {{ $tool->colour }};"
                                         data-modal-info="{{ $tool->info }}"
                                     >
                                         <i class="fas fa-info-circle"></i>
@@ -60,6 +60,7 @@
                         @endif
                     @endforeach
                 </div>
+
 
                 <div class="mt-6 flex justify-center">
                     {{ $tools->appends(['search' => $search])->onEachSide(1)->links('pagination::tailwind') }}
