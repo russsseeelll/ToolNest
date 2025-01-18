@@ -24,7 +24,6 @@ class ToolController extends Controller
         $user = auth()->user();
         $userGroupIds = $user->groups->pluck('id')->toArray();
 
-        // Get all tools for the user (filter by groups and search)
         $toolsQuery = Tool::when($search, function ($query, $search) {
             return $query->where('name', 'LIKE', '%' . $search . '%');
         })
@@ -35,11 +34,9 @@ class ToolController extends Controller
                     });
             });
 
-        // Fetch all tools for sorting and preference purposes
         $allTools = $toolsQuery->get();
         $preferences = collect(json_decode($user->tool_preferences, true) ?? []);
 
-        // Apply preferences to all tools
         $allTools->transform(function ($tool) use ($preferences) {
             $pref = $preferences->firstWhere('id', $tool->id);
             $tool->visible = $pref['visible'] ?? true;
@@ -47,10 +44,8 @@ class ToolController extends Controller
             return $tool;
         });
 
-        // Only include visible tools
         $visibleTools = $allTools->filter(fn($tool) => $tool->visible)->sortBy('order');
 
-        // Manually paginate visible tools
         $page = LengthAwarePaginator::resolveCurrentPage();
         $perPage = 8;
         $paginatedTools = new LengthAwarePaginator(
@@ -61,17 +56,15 @@ class ToolController extends Controller
             ['path' => LengthAwarePaginator::resolveCurrentPath()]
         );
 
-        // Fetch tech news
         $techNews = News::inRandomOrder()->limit(5)->get();
 
         return view('home', [
-            'tools' => $paginatedTools, // Paginated visible tools
-            'allTools' => $allTools->sortBy('order'), // All tools for preferences
+            'tools' => $paginatedTools,
+            'allTools' => $allTools->sortBy('order'),
             'search' => $search,
             'techNews' => $techNews,
         ]);
     }
-
 
     public function manage(Request $request, Tool $tool = null)
     {
