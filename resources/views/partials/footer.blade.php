@@ -1,4 +1,6 @@
 <!-- Footer -->
-<footer class="bg-[#003865] text-white text-center py-4">
-    <p>COSE IT @ 2024</p>
+<footer class="bg-[#003865] text-white py-6">
+    <div class="container mx-auto text-center">
+        <p class="text-sm md:text-base font-light">&copy; {{ now()->year }}. Built by <span class="font-semibold">CoSE IT</span> </p>
+    </div>
 </footer>

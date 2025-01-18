@@ -64,6 +64,14 @@
         </div>
 
         <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="tool-image">Image Upload</label>
+            <input type="file" id="tool-image" name="image" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+            @if(isset($tool) && $tool->image)
+                <p class="mt-2 text-sm text-gray-500">Current Image: <a href="{{ Storage::url($tool->image) }}" target="_blank">{{ $tool->image }}</a></p>
+            @endif
+        </div>
+
+        <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="tool-url">Group(s)</label>
             <input type="text" id="tool-groups" name="groups"
                    value="{{ old('groups', $toolGroups ?? '') }}"

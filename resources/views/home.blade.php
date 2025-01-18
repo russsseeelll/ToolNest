@@ -143,6 +143,7 @@
         </div>
     </div>
 
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const toolPreferencesList = document.getElementById('toolPreferencesList');
