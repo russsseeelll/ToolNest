@@ -7,6 +7,10 @@ use App\Http\Middleware\CheckGuid;
 Route::middleware([CheckGuid::class])->group(function () {
     Route::get('/', [ToolController::class, 'index'])->name('home');
 
+    Route::get('/tools/preferences', [ToolController::class, 'getUserPreferences'])->name('tools.preferences');
+    Route::post('/tools/preferences', [ToolController::class, 'saveUserPreferences'])->name('tools.preferences.save');
+
+
     Route::get('/fetch-news', [ToolController::class, 'fetchNewsAjax'])->name('fetch.news');
 
     // Manage Route (For both tools and users management)

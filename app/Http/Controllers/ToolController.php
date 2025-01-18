@@ -23,28 +23,50 @@ class ToolController extends Controller
         $user = auth()->user();
         $userGroupIds = $user->groups->pluck('id')->toArray();
 
+        // Fetch all tools accessible to the user
         $tools = Tool::when($search, function ($query, $search) {
             return $query->where('name', 'LIKE', '%' . $search . '%');
         })
             ->where(function ($query) use ($userGroupIds) {
                 $query->where('allGroups', true)
-                ->orWhereHas('groups', function ($groupQuery) use ($userGroupIds) {
-                    $groupQuery->whereIn('groups.id', $userGroupIds);
-                });
+                    ->orWhereHas('groups', function ($groupQuery) use ($userGroupIds) {
+                        $groupQuery->whereIn('groups.id', $userGroupIds);
+                    });
             })
-            ->paginate(8);
+            ->get();
 
-        $tools->appends(['search' => $search]);
+        // Decode the preferences JSON string if necessary
+        $preferences = is_string($user->tool_preferences)
+            ? collect(json_decode($user->tool_preferences, true)) // Decode JSON string
+            : collect($user->tool_preferences); // Already an array
+
+        // Merge preferences into tools
+        $tools = $tools->map(function ($tool) use ($preferences) {
+            $pref = $preferences->firstWhere('id', $tool->id);
+
+            // Apply preferences
+            $tool->visible = $pref['visible'] ?? true; // Default to true if not set
+            $tool->order = $pref['order'] ?? $tool->id; // Default to tool ID if no order is set
+            return $tool;
+        });
+
+        // Tools for the main grid: Only visible ones
+        $visibleTools = $tools->filter(function ($tool) {
+            return $tool->visible === true; // Explicitly check for visible: true
+        })->sortBy('order'); // Sort visible tools by order
+
+        // Sort all tools for the modal
+        $allTools = $tools->sortBy('order'); // Ensure allTools is sorted by order
 
         $techNews = News::inRandomOrder()->limit(5)->get();
 
-        return view('home', compact('tools', 'search', 'techNews'));
+        return view('home', [
+            'tools' => $visibleTools, // Tools for the grid
+            'allTools' => $allTools, // Sorted tools for customisation modal
+            'search' => $search,
+            'techNews' => $techNews,
+        ]);
     }
-
-
-
-
-
     public function manage(Request $request, Tool $tool = null)
     {
         $tools = Tool::with('groups')->get();
@@ -163,4 +185,35 @@ class ToolController extends Controller
         $groupNamesArray = array_map('trim', explode(',', $groupNames));
         return Group::whereIn('groupname', $groupNamesArray)->pluck('id')->toArray();
     }
+
+    public function getUserPreferences()
+    {
+        $user = auth()->user();
+        return response()->json($user->tool_preferences);
+    }
+
+    public function saveUserPreferences(Request $request)
+    {
+        $user = auth()->user();
+        $preferences = $request->input('tools', []);
+
+        // Map preferences to the correct format
+        $updatedPreferences = [];
+        foreach ($preferences as $toolId => $data) {
+            $updatedPreferences[] = [
+                'id' => (int) $toolId, // Ensure the tool ID is an integer
+                'visible' => isset($data['visible']), // Checkbox handling
+                'order' => (int) $data['order'], // Save order as an integer
+            ];
+        }
+
+        // Save preferences as JSON
+        $user->update(['tool_preferences' => json_encode($updatedPreferences)]);
+
+        return redirect()->back()->with('success', 'Preferences updated successfully.');
+    }
+
+
+
+
 }
