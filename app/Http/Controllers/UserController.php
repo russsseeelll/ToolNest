@@ -80,12 +80,17 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if (auth()->id() === $user->id) {
+            return redirect()->route('manage')
+                ->with('error', 'You cannot delete your own account.');
+        }
 
         $user->groups()->detach();
         $user->delete();
 
         return redirect()->route('manage')->with('success', 'User deleted successfully.');
     }
+
 
     private function getGroupIdsFromNames($groupNames)
     {
