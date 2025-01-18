@@ -24,7 +24,7 @@
                         <button class="bg-[#003865] text-white px-4 py-2 rounded-r-lg" type="submit">Search</button>
                     </form>
 
-                    @if(!request()->has('search') || request()->input('search') === '')
+                    @if(!request()->filled('search') || trim(request()->input('search')) === '')
                         <button id="openModalBtn" class="text-[#003865] hover:text-[#002a52]">
                             <i class="fas fa-cog text-2xl"></i>
                         </button>
