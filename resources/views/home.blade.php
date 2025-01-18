@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'UofG: CoSE IT Tools')
+@section('title', 'CoSE: IT Tools')
 
 @section('content')
     <main class="container mx-auto py-12 px-6 flex flex-wrap lg:flex-nowrap">
