@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Models\News;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ToolController extends Controller
 {
@@ -23,6 +24,7 @@ class ToolController extends Controller
         $user = auth()->user();
         $userGroupIds = $user->groups->pluck('id')->toArray();
 
+        // Get all tools for the user (filter by groups and search)
         $toolsQuery = Tool::when($search, function ($query, $search) {
             return $query->where('name', 'LIKE', '%' . $search . '%');
         })
@@ -33,32 +35,43 @@ class ToolController extends Controller
                     });
             });
 
+        // Fetch all tools for sorting and preference purposes
+        $allTools = $toolsQuery->get();
         $preferences = collect(json_decode($user->tool_preferences, true) ?? []);
 
-        $tools = $toolsQuery->paginate(8);
-        $tools->getCollection()->transform(function ($tool) use ($preferences) {
+        // Apply preferences to all tools
+        $allTools->transform(function ($tool) use ($preferences) {
             $pref = $preferences->firstWhere('id', $tool->id);
             $tool->visible = $pref['visible'] ?? true;
             $tool->order = $pref['order'] ?? $tool->id;
             return $tool;
         });
 
-        $allTools = $toolsQuery->get()->map(function ($tool) use ($preferences) {
-            $pref = $preferences->firstWhere('id', $tool->id);
-            $tool->visible = $pref['visible'] ?? true;
-            $tool->order = $pref['order'] ?? $tool->id;
-            return $tool;
-        })->sortBy('order');
+        // Only include visible tools
+        $visibleTools = $allTools->filter(fn($tool) => $tool->visible)->sortBy('order');
 
+        // Manually paginate visible tools
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 8;
+        $paginatedTools = new LengthAwarePaginator(
+            $visibleTools->forPage($page, $perPage),
+            $visibleTools->count(),
+            $perPage,
+            $page,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
+
+        // Fetch tech news
         $techNews = News::inRandomOrder()->limit(5)->get();
 
         return view('home', [
-            'tools' => $tools,
-            'allTools' => $allTools,
+            'tools' => $paginatedTools, // Paginated visible tools
+            'allTools' => $allTools->sortBy('order'), // All tools for preferences
             'search' => $search,
             'techNews' => $techNews,
         ]);
     }
+
 
     public function manage(Request $request, Tool $tool = null)
     {

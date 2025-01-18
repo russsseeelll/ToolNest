@@ -104,7 +104,13 @@
                         <li class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200" data-id="{{ $tool->id }}">
                             <div class="flex items-center space-x-3">
                                 <i class="fas fa-grip-vertical text-gray-400 cursor-pointer hover:text-gray-600"></i>
-                                <input type="checkbox" name="tools[{{ $tool->id }}][visible]" value="1" {{ $tool->visible ? 'checked' : '' }} class="h-5 w-5 text-[#385a4f] focus:ring-[#385a4f] rounded">
+                                <input
+                                    type="checkbox"
+                                    name="tools[{{ $tool->id }}][visible]"
+                                    value="1"
+                                    {{ $tool->visible ? 'checked' : '' }}
+                                    class="h-5 w-5 text-[#385a4f] focus:ring-[#385a4f] rounded"
+                                >
                                 <input type="hidden" name="tools[{{ $tool->id }}][order]" value="{{ $tool->order }}">
                                 <span class="tool-name text-gray-800 font-medium">{{ $tool->name }}</span>
                             </div>
