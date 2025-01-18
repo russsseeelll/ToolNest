@@ -23,8 +23,8 @@ class ToolController extends Controller
         $user = auth()->user();
         $userGroupIds = $user->groups->pluck('id')->toArray();
 
-        // Fetch all tools accessible to the user
-        $tools = Tool::when($search, function ($query, $search) {
+        // Fetch paginated tools and apply search
+        $toolsQuery = Tool::when($search, function ($query, $search) {
             return $query->where('name', 'LIKE', '%' . $search . '%');
         })
             ->where(function ($query) use ($userGroupIds) {
@@ -32,41 +32,39 @@ class ToolController extends Controller
                     ->orWhereHas('groups', function ($groupQuery) use ($userGroupIds) {
                         $groupQuery->whereIn('groups.id', $userGroupIds);
                     });
-            })
-            ->get();
+            });
 
         // Decode the preferences JSON string if necessary
-        $preferences = is_string($user->tool_preferences)
-            ? collect(json_decode($user->tool_preferences, true)) // Decode JSON string
-            : collect($user->tool_preferences); // Already an array
+        $preferences = collect(json_decode($user->tool_preferences, true) ?? []);
 
-        // Merge preferences into tools
-        $tools = $tools->map(function ($tool) use ($preferences) {
+        // Paginate tools and apply user preferences
+        $tools = $toolsQuery->paginate(8);
+        $tools->getCollection()->transform(function ($tool) use ($preferences) {
             $pref = $preferences->firstWhere('id', $tool->id);
-
-            // Apply preferences
-            $tool->visible = $pref['visible'] ?? true; // Default to true if not set
-            $tool->order = $pref['order'] ?? $tool->id; // Default to tool ID if no order is set
+            $tool->visible = $pref['visible'] ?? true;
+            $tool->order = $pref['order'] ?? $tool->id;
             return $tool;
         });
 
-        // Tools for the main grid: Only visible ones
-        $visibleTools = $tools->filter(function ($tool) {
-            return $tool->visible === true; // Explicitly check for visible: true
-        })->sortBy('order'); // Sort visible tools by order
-
-        // Sort all tools for the modal
-        $allTools = $tools->sortBy('order'); // Ensure allTools is sorted by order
+        // All tools for modal, sorted by order
+        $allTools = $toolsQuery->get()->map(function ($tool) use ($preferences) {
+            $pref = $preferences->firstWhere('id', $tool->id);
+            $tool->visible = $pref['visible'] ?? true;
+            $tool->order = $pref['order'] ?? $tool->id;
+            return $tool;
+        })->sortBy('order');
 
         $techNews = News::inRandomOrder()->limit(5)->get();
 
         return view('home', [
-            'tools' => $visibleTools, // Tools for the grid
-            'allTools' => $allTools, // Sorted tools for customisation modal
+            'tools' => $tools,
+            'allTools' => $allTools,
             'search' => $search,
             'techNews' => $techNews,
         ]);
     }
+
+
     public function manage(Request $request, Tool $tool = null)
     {
         $tools = Tool::with('groups')->get();

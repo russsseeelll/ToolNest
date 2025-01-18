@@ -6,18 +6,35 @@
     <main class="container mx-auto py-12 px-6 flex flex-wrap lg:flex-nowrap">
         <!-- Main Content: Tools Grid -->
         <div class="w-full lg:w-3/4 lg:mr-6">
-            <!-- Customisation Modal Trigger -->
-            <div class="flex justify-between items-center mb-6">
+            <!-- Header: Title, Customisation, and Search -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                <!-- Title -->
                 <h1 class="text-2xl font-bold text-[#003865]">Your Tools</h1>
-                <button id="openModalBtn" class="flex items-center space-x-2 text-[#003865] hover:text-[#002a52]">
-                    <i class="fas fa-cogs text-xl"></i>
-                    <span>Customise View</span>
-                </button>
+
+                <!-- Search & Customisation -->
+                <div class="flex items-center space-x-4 w-full md:w-auto">
+                    <!-- Search Form -->
+                    <form action="{{ route('home') }}" method="GET" class="flex flex-grow md:flex-grow-0">
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request()->input('search') }}"
+                            placeholder="Search tools..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none"
+                        >
+                        <button class="bg-[#003865] text-white px-4 py-2 rounded-r-lg" type="submit">Search</button>
+                    </form>
+
+                    <!-- Customisation Cog -->
+                    <button id="openModalBtn" class="text-[#003865] hover:text-[#002a52]">
+                        <i class="fas fa-cog text-2xl"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Check if there are tools -->
             @if($tools->isEmpty())
-                <p class="text-center text-gray-500">No tools yet.</p>
+                <p class="text-center text-gray-500">No tools found. Try adjusting your search.</p>
             @else
                 <!-- Tool Grid -->
                 <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -32,8 +49,15 @@
                         @endif
                     @endforeach
                 </div>
+
+                <!-- Pagination -->
+                <div class="mt-6 flex justify-center">
+                    {{ $tools->appends(['search' => $search])->onEachSide(1)->links('pagination::tailwind') }}
+                </div>
             @endif
         </div>
+
+
 
         <!-- Sidebar: Latest Tech News -->
         <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
@@ -62,22 +86,22 @@
         </aside>
     </main>
 
-    <!-- TailwindCSS Modal -->
+    <!-- Customisation Modal -->
     <div id="customiseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
         <div class="bg-white w-full max-w-lg p-6 rounded-lg shadow-2xl transform transition-all duration-300 scale-95">
-            <h2 class="text-3xl font-extrabold mb-6 text-[#003865] text-center">Customise View</h2>
+            <h2 class="text-3xl font-extrabold mb-6 text-[#003865] text-center">Customise Tools</h2>
             <form id="toolPreferencesForm" action="{{ route('tools.preferences.save') }}" method="POST" class="space-y-6">
                 @csrf
                 <ul id="toolPreferencesList" class="space-y-4 max-h-96 overflow-y-auto border-t border-gray-200 pt-4">
                     @foreach($allTools as $tool)
-                    <li class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200" data-id="{{ $tool->id }}">
-                        <div class="flex items-center space-x-3">
-                            <i class="fas fa-grip-vertical text-gray-400 cursor-pointer hover:text-gray-600"></i>
-                            <input type="checkbox" name="tools[{{ $tool->id }}][visible]" value="1" {{ $tool->visible ? 'checked' : '' }} class="h-5 w-5 text-[#385a4f] focus:ring-[#385a4f] rounded">
-                            <input type="hidden" name="tools[{{ $tool->id }}][order]" value="{{ $tool->order }}">
-                            <span class="tool-name text-gray-800 font-medium">{{ $tool->name }}</span>
-                        </div>
-                    </li>
+                        <li class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200" data-id="{{ $tool->id }}">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-grip-vertical text-gray-400 cursor-pointer hover:text-gray-600"></i>
+                                <input type="checkbox" name="tools[{{ $tool->id }}][visible]" value="1" {{ $tool->visible ? 'checked' : '' }} class="h-5 w-5 text-[#385a4f] focus:ring-[#385a4f] rounded">
+                                <input type="hidden" name="tools[{{ $tool->id }}][order]" value="{{ $tool->order }}">
+                                <span class="tool-name text-gray-800 font-medium">{{ $tool->name }}</span>
+                            </div>
+                        </li>
                     @endforeach
                 </ul>
                 <div class="flex justify-end space-x-4">
@@ -92,7 +116,6 @@
         </div>
     </div>
 
-    <!-- Required JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const toolPreferencesList = document.getElementById('toolPreferencesList');
