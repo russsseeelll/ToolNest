@@ -1,4 +1,3 @@
-<!-- Left Pane: Existing Tools List -->
 <div class="w-full lg:w-1/4 lg:mr-6">
     <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6 h-full max-h-[40rem] flex flex-col">
         <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Existing Tools</h2>
@@ -17,14 +16,13 @@
                 </li>
             @endforeach
         </ul>
-        <!-- Add New Tool Button -->
+
         <div class="mt-4 sticky bottom-0 bg-white pt-2">
             <a href="{{ route('manage') }}" class="block bg-[#385a4f] hover:bg-[#2c483d] text-white p-3 rounded-lg shadow-md text-center transition">Add New Tool</a>
         </div>
     </div>
 </div>
 
-<!-- Right Pane: Editing/Adding Form -->
 <div class="w-full lg:w-3/4 bg-white border border-gray-300 rounded-lg shadow-lg p-6">
     <h2 class="text-2xl font-semibold mb-4 text-[#003865]">{{ isset($tool) ? 'Edit Tool' : 'Add Tool' }}</h2>
     <form id="tool-form" action="{{ isset($tool) ? route('tools.update', $tool->id) : route('tools.store') }}" method="POST" enctype="multipart/form-data">
@@ -41,6 +39,17 @@
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="tool-url">URL</label>
             <input type="url" id="tool-url" name="url" value="{{ old('url', $tool->url ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter tool URL" required>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="tool-info">Description</label>
+            <textarea
+                id="tool-info"
+                name="info"
+                rows="3"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                placeholder="Enter a description for the tool. e.g., what it does, who's an admin etc"
+            >{{ old('info', $tool->info ?? '') }}</textarea>
         </div>
 
         <div class="mb-4">
@@ -78,7 +87,6 @@
             >
             <label for="allGroups" class="text-gray-700 text-sm font-bold">All Groups</label>
         </div>
-
 
         <div class="flex justify-end space-x-2">
             @if(isset($tool))

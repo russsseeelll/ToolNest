@@ -23,7 +23,6 @@ class ToolController extends Controller
         $user = auth()->user();
         $userGroupIds = $user->groups->pluck('id')->toArray();
 
-        // Fetch paginated tools and apply search
         $toolsQuery = Tool::when($search, function ($query, $search) {
             return $query->where('name', 'LIKE', '%' . $search . '%');
         })
@@ -34,10 +33,8 @@ class ToolController extends Controller
                     });
             });
 
-        // Decode the preferences JSON string if necessary
         $preferences = collect(json_decode($user->tool_preferences, true) ?? []);
 
-        // Paginate tools and apply user preferences
         $tools = $toolsQuery->paginate(8);
         $tools->getCollection()->transform(function ($tool) use ($preferences) {
             $pref = $preferences->firstWhere('id', $tool->id);
@@ -46,7 +43,6 @@ class ToolController extends Controller
             return $tool;
         });
 
-        // All tools for modal, sorted by order
         $allTools = $toolsQuery->get()->map(function ($tool) use ($preferences) {
             $pref = $preferences->firstWhere('id', $tool->id);
             $tool->visible = $pref['visible'] ?? true;
@@ -63,7 +59,6 @@ class ToolController extends Controller
             'techNews' => $techNews,
         ]);
     }
-
 
     public function manage(Request $request, Tool $tool = null)
     {
@@ -88,6 +83,7 @@ class ToolController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'url' => 'required|url',
+            'info' => 'nullable|string|max:2000',
             'colour' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'groups' => 'nullable|string',
@@ -101,16 +97,17 @@ class ToolController extends Controller
         $tool = Tool::create([
             'name' => $request->name,
             'url' => $request->url,
+            'info' => $request->info,
             'colour' => $request->colour,
             'image' => $imagePath,
             'allGroups' => $request->boolean('allGroups'),
+
         ]);
 
         if (!$request->boolean('allGroups') && $request->has('groups')) {
             $groupIds = $this->getGroupIdsFromNames($request->groups);
             $tool->groups()->sync($groupIds);
         }
-
 
         return redirect()->route('manage', ['tool' => $tool->id])->with('success', 'Tool created successfully.');
     }
@@ -121,12 +118,12 @@ class ToolController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'url' => 'required|url',
+            'info' => 'nullable|string|max:2000',
             'colour' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'groups' => 'nullable|string',
             'allGroups' => 'nullable|boolean',
         ]);
-
 
         $imagePath = $tool->image;
         if ($request->hasFile('image')) {
@@ -136,6 +133,7 @@ class ToolController extends Controller
         $tool->update([
             'name' => $request->name,
             'url' => $request->url,
+            'info' => $request->info,
             'colour' => $request->colour,
             'image' => $imagePath,
             'allGroups' => $request->boolean('allGroups'),
@@ -147,7 +145,6 @@ class ToolController extends Controller
         } else {
             $tool->groups()->detach();
         }
-
 
         return redirect()->route('manage', ['tool' => $tool->id])->with('success', 'Tool updated successfully.');
     }
@@ -195,23 +192,18 @@ class ToolController extends Controller
         $user = auth()->user();
         $preferences = $request->input('tools', []);
 
-        // Map preferences to the correct format
         $updatedPreferences = [];
         foreach ($preferences as $toolId => $data) {
             $updatedPreferences[] = [
-                'id' => (int) $toolId, // Ensure the tool ID is an integer
-                'visible' => isset($data['visible']), // Checkbox handling
-                'order' => (int) $data['order'], // Save order as an integer
+                'id' => (int) $toolId,
+                'visible' => isset($data['visible']),
+                'order' => (int) $data['order'],
             ];
         }
 
-        // Save preferences as JSON
         $user->update(['tool_preferences' => json_encode($updatedPreferences)]);
 
         return redirect()->back()->with('success', 'Preferences updated successfully.');
     }
-
-
-
 
 }

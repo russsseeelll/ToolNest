@@ -10,7 +10,7 @@ class Tool extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'url', 'colour', 'image', 'allGroups',
+        'name', 'url', 'colour', 'image', 'allGroups', 'info',
     ];
 
 

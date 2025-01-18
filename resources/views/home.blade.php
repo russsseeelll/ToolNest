@@ -4,16 +4,15 @@
 
 @section('content')
     <main class="container mx-auto py-12 px-6 flex flex-wrap lg:flex-nowrap">
-        <!-- Main Content: Tools Grid -->
+
         <div class="w-full lg:w-3/4 lg:mr-6">
-            <!-- Header: Title, Customisation, and Search -->
+
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-                <!-- Title -->
+
                 <h1 class="text-2xl font-bold text-[#003865]">Your Tools</h1>
 
-                <!-- Search & Customisation -->
                 <div class="flex items-center space-x-4 w-full md:w-auto">
-                    <!-- Search Form -->
+
                     <form action="{{ route('home') }}" method="GET" class="flex flex-grow md:flex-grow-0">
                         <input
                             type="text"
@@ -25,41 +24,49 @@
                         <button class="bg-[#003865] text-white px-4 py-2 rounded-r-lg" type="submit">Search</button>
                     </form>
 
-                    <!-- Customisation Cog -->
                     <button id="openModalBtn" class="text-[#003865] hover:text-[#002a52]">
                         <i class="fas fa-cog text-2xl"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Check if there are tools -->
             @if($tools->isEmpty())
                 <p class="text-center text-gray-500">No tools found. Try adjusting your search.</p>
             @else
-                <!-- Tool Grid -->
+
                 <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     @foreach($tools as $tool)
                         @if($tool->visible)
-                            <a href="{{ $tool->url }}" class="block border border-gray-300 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow transform hover:scale-105 duration-200" style="order: {{ $tool->order }}">
-                                <img src="{{ $tool->image ? asset('storage/' . $tool->image) : 'https://via.placeholder.com/400x300.png?text=' . $tool->name }}" alt="{{ $tool->name }}" class="w-full h-48 object-cover">
-                                <div class="p-4" style="background-color: {{ $tool->colour }}; color: white;">
-                                    <h2 class="text-lg font-semibold truncate">{{ $tool->name }}</h2>
-                                </div>
-                            </a>
+                            <div
+                                class="relative block border border-gray-300 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow transform hover:scale-105 duration-200"
+                                style="order: {{ $tool->order }}"
+                            >
+                                <a href="{{ $tool->url }}">
+                                    <img src="{{ $tool->image ? asset('storage/' . $tool->image) : 'https://via.placeholder.com/400x300.png?text=' . $tool->name }}" alt="{{ $tool->name }}" class="w-full h-48 object-cover">
+                                    <div class="p-4" style="background-color: {{ $tool->colour }}; color: white;">
+                                        <h2 class="text-lg font-semibold truncate">{{ $tool->name }}</h2>
+                                    </div>
+                                </a>
+
+                                @if(!empty($tool->info))
+                                    <button
+                                        class="absolute top-2 right-2 group text-white text-lg focus:outline-none"
+                                        data-modal-info="{{ $tool->info }}"
+                                    >
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                @endif
+                            </div>
                         @endif
                     @endforeach
                 </div>
 
-                <!-- Pagination -->
                 <div class="mt-6 flex justify-center">
                     {{ $tools->appends(['search' => $search])->onEachSide(1)->links('pagination::tailwind') }}
                 </div>
             @endif
         </div>
 
-
-
-        <!-- Sidebar: Latest Tech News -->
         <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
             <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Tech News</h2>
@@ -86,7 +93,6 @@
         </aside>
     </main>
 
-    <!-- Customisation Modal -->
     <div id="customiseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
         <div class="bg-white w-full max-w-lg p-6 rounded-lg shadow-2xl transform transition-all duration-300 scale-95">
             <h2 class="text-3xl font-extrabold mb-6 text-[#003865] text-center">Customise Tools</h2>
@@ -116,33 +122,69 @@
         </div>
     </div>
 
+    <div id="toolInfoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-md p-6 rounded-lg shadow-2xl transform transition-all duration-300 scale-95">
+            <h2 class="text-2xl font-bold mb-4 text-[#003865]" id="toolInfoTitle">Tool Information</h2>
+            <p class="text-gray-700 text-sm" id="toolInfoContent"></p>
+            <div class="flex justify-end mt-6">
+                <button id="closeToolInfoModal" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-400 transition duration-200">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const toolPreferencesList = document.getElementById('toolPreferencesList');
             const openModalBtn = document.getElementById('openModalBtn');
             const closeModalBtn = document.getElementById('closeModalBtn');
-            const modal = document.getElementById('customiseModal');
+            const customiseModal = document.getElementById('customiseModal');
 
-            // Enable drag-and-drop sorting
             new Sortable(toolPreferencesList, {
                 animation: 150,
                 handle: '.fa-grip-vertical',
                 onEnd: function () {
-                    // Update order inputs on drag-and-drop
+
                     Array.from(toolPreferencesList.children).forEach((li, index) => {
-                        li.querySelector('input[name$="[order]"]').value = index + 1; // Update the order input
+                        li.querySelector('input[name$="[order]"]').value = index + 1;
                     });
                 },
             });
 
-            // Open modal
             openModalBtn.addEventListener('click', () => {
-                modal.classList.remove('hidden');
+                customiseModal.classList.remove('hidden');
             });
 
-            // Close modal
             closeModalBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
+                customiseModal.classList.add('hidden');
+            });
+
+            const infoModal = document.getElementById('toolInfoModal');
+            const infoTitle = document.getElementById('toolInfoTitle');
+            const infoContent = document.getElementById('toolInfoContent');
+            const closeInfoModalBtn = document.getElementById('closeToolInfoModal');
+
+            document.querySelectorAll('[data-modal-info]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const toolInfo = button.getAttribute('data-modal-info');
+                    const toolName = button.closest('.block').querySelector('h2').textContent;
+
+                    infoTitle.textContent = `${toolName} Info`;
+                    infoContent.textContent = toolInfo;
+
+                    infoModal.classList.remove('hidden');
+                });
+            });
+
+            closeInfoModalBtn.addEventListener('click', () => {
+                infoModal.classList.add('hidden');
+            });
+
+            infoModal.addEventListener('click', (event) => {
+                if (event.target === infoModal) {
+                    infoModal.classList.add('hidden');
+                }
             });
         });
     </script>
