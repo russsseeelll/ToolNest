@@ -15,7 +15,8 @@
     @endif
     @if($errors->any())
         <div id="flash-message" class="container mx-auto mt-4">
-            <div class="bg-red-500 text-white p-4 rounded-lg shadow-md flex justify-between items-center">
+            <div class="p-4 rounded-lg shadow-md flex justify-between items-center"
+                 style="background-color: rgb(125, 34, 87); color: white;">
                 <ul>
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
