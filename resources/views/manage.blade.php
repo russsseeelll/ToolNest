@@ -88,12 +88,17 @@
             bindGroupAutocomplete('#user-groups', '#user-group-suggestions', groups);
 
             function bindGroupAutocomplete(inputSelector, suggestionSelector, groups) {
-                $(inputSelector).on('input', function() {
-                    let inputField = $(this);
-                    let suggestionBox = $(suggestionSelector);
-                    handleGroupInput(inputField, suggestionBox, groups);
+                $(inputSelector).on('input', function () {
+                    const inputField = $(this);
+                    const suggestionBox = $(suggestionSelector);
+
+                    // Only run autocomplete if the input is not disabled
+                    if (!inputField.prop('disabled')) {
+                        handleGroupInput(inputField, suggestionBox, groups);
+                    }
                 });
             }
+
 
             function handleGroupInput(inputField, suggestionBox, groups) {
                 let query = inputField.val().toLowerCase().split(',').pop().trim();
@@ -133,6 +138,42 @@
             setTimeout(function() {
                 $('#flash-message').fadeOut();
             }, 5000);
+        });
+
+        //all group logic
+        $(document).ready(function() {
+            const allGroupsCheckbox = $('#allGroups');
+            const groupsInput = $('#tool-groups');
+
+            if (allGroupsCheckbox.is(':checked')) {
+                groupsInput.prop('disabled', true)
+                    .css({
+                        'background-color': '#d3d3d3',
+                        'opacity': '0.7',
+                        'cursor': 'not-allowed'
+                    })
+                    .val('');
+            }
+
+            allGroupsCheckbox.on('change', function() {
+                const isChecked = $(this).is(':checked');
+                if (isChecked) {
+                    groupsInput.prop('disabled', true)
+                        .css({
+                            'background-color': '#d3d3d3',
+                            'opacity': '0.7',
+                            'cursor': 'not-allowed'
+                        })
+                        .val('');
+                } else {
+                    groupsInput.prop('disabled', false)
+                        .css({
+                            'background-color': '',
+                            'opacity': '',
+                            'cursor': ''
+                        });
+                }
+            });
         });
     </script>
 @endsection

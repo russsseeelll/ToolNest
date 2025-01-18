@@ -55,17 +55,28 @@
         </div>
 
         <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="tool-image">Image Upload</label>
-            <input type="file" id="tool-image" name="image" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-            @if(isset($tool) && $tool->image)
-                <p class="mt-2 text-sm text-gray-500">Current Image: <a href="{{ Storage::url($tool->image) }}" target="_blank">{{ $tool->image }}</a></p>
-            @endif
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="tool-url">Group(s)</label>
+            <input type="text" id="tool-groups" name="groups"
+                   value="{{ old('groups', $toolGroups ?? '') }}"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                   placeholder="Enter group names separated by commas"
+                   autocomplete="off"
+                   required
+                {{ old('allGroups', $tool->allGroups ?? 0) ? 'disabled style=background-color:#d3d3d3;opacity:0.7;cursor:not-allowed;' : '' }}>
+            <ul id="tool-group-suggestions" class="border border-gray-300 rounded-lg bg-white shadow-lg mt-1 p-2 hidden"></ul>
         </div>
 
-        <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="tool-groups">Tool Group(s)</label>
-            <input type="text" id="tool-groups" name="groups" value="{{ old('groups', $toolGroups ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter group names separated by commas" autocomplete="off" required>
-            <ul id="tool-group-suggestions" class="border border-gray-300 rounded-lg bg-white shadow-lg mt-1 p-2 hidden"></ul>
+        <div class="mb-4">
+            <input type="hidden" name="allGroups" value="0">
+            <input
+                type="checkbox"
+                id="allGroups"
+                name="allGroups"
+                value="1"
+                class="mr-2"
+                {{ old('allGroups', $tool->allGroups ?? false) ? 'checked' : '' }}
+            >
+            <label for="allGroups" class="text-gray-700 text-sm font-bold">All Groups</label>
         </div>
 
 

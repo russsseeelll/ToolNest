@@ -26,8 +26,11 @@ class ToolController extends Controller
         $tools = Tool::when($search, function ($query, $search) {
             return $query->where('name', 'LIKE', '%' . $search . '%');
         })
-            ->whereHas('groups', function ($query) use ($userGroupIds) {
-                $query->whereIn('groups.id', $userGroupIds);
+            ->where(function ($query) use ($userGroupIds) {
+                $query->where('allGroups', true)
+                ->orWhereHas('groups', function ($groupQuery) use ($userGroupIds) {
+                    $groupQuery->whereIn('groups.id', $userGroupIds);
+                });
             })
             ->paginate(8);
 
@@ -37,6 +40,7 @@ class ToolController extends Controller
 
         return view('home', compact('tools', 'search', 'techNews'));
     }
+
 
 
 
@@ -79,12 +83,14 @@ class ToolController extends Controller
             'url' => $request->url,
             'colour' => $request->colour,
             'image' => $imagePath,
+            'allGroups' => $request->boolean('allGroups'),
         ]);
 
-        if ($request->has('groups')) {
+        if (!$request->boolean('allGroups') && $request->has('groups')) {
             $groupIds = $this->getGroupIdsFromNames($request->groups);
             $tool->groups()->sync($groupIds);
         }
+
 
         return redirect()->route('manage', ['tool' => $tool->id])->with('success', 'Tool created successfully.');
     }
@@ -98,7 +104,9 @@ class ToolController extends Controller
             'colour' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'groups' => 'nullable|string',
+            'allGroups' => 'nullable|boolean',
         ]);
+
 
         $imagePath = $tool->image;
         if ($request->hasFile('image')) {
@@ -110,12 +118,16 @@ class ToolController extends Controller
             'url' => $request->url,
             'colour' => $request->colour,
             'image' => $imagePath,
+            'allGroups' => $request->boolean('allGroups'),
         ]);
 
-        if ($request->has('groups')) {
+        if (!$request->boolean('allGroups')) {
             $groupIds = $this->getGroupIdsFromNames($request->groups);
             $tool->groups()->sync($groupIds);
+        } else {
+            $tool->groups()->detach();
         }
+
 
         return redirect()->route('manage', ['tool' => $tool->id])->with('success', 'Tool updated successfully.');
     }
