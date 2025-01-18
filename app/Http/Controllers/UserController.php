@@ -82,7 +82,7 @@ class UserController extends Controller
     {
         if (auth()->id() === $user->id) {
             return redirect()->route('manage')
-                ->with('error', 'You cannot delete your own account.');
+                ->withErrors(['You cannot delete your own account.']);
         }
 
         $user->groups()->detach();
@@ -90,6 +90,7 @@ class UserController extends Controller
 
         return redirect()->route('manage')->with('success', 'User deleted successfully.');
     }
+
 
 
     private function getGroupIdsFromNames($groupNames)

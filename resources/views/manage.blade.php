@@ -6,7 +6,8 @@
     <!-- Flash Messages -->
     @if(session('success'))
         <div id="flash-message" class="container mx-auto mt-4">
-            <div class="bg-green-500 text-white p-4 rounded-lg shadow-md flex justify-between items-center">
+            <div class="p-4 rounded-lg shadow-md flex justify-between items-center"
+                 style="background-color: rgb(56, 90, 79); color: white;">
                 <span>{{ session('success') }}</span>
                 <button id="close-flash" class="text-white ml-4 focus:outline-none">&times;</button>
             </div>
