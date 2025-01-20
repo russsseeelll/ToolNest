@@ -36,9 +36,10 @@ class FetchTechNews extends Command
         $keywordsList = [
             'education technology', 'edtech', 'AI in education', 'robotics in classrooms', 'smart classrooms',
             'infrastructure', 'NVIDIA', 'AI research', 'cloud computing', 'data centers',
-            'machine learning', 'AR and VR', 'IoT', 'developer tools'
+            'machine learning', 'AR and VR', 'IoT', 'developer tools', 'quantum computing',
+            'cybersecurity', 'open-source', '5G', 'AI ethics', 'blockchain technology'
         ];
-        $domains = 'techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com';
+        $domains = 'techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com,bbc.com,forbes.com,engadget.com,zdnet.com,reuters.com,guardian.co.uk';
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
