@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Edit/Add Tools and Users - CoSE IT Tools')
+@section('title', 'Edit/Add Tools and Users -', env('ORG_NAME', 'OrgName') . 'Tools')
+
 
 @section('content')
     <!-- Flash Messages -->
