@@ -1,187 +1,66 @@
-# CoSE IT Tools Portal
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-The CoSE IT Tools Portal is a Laravel-based web application designed to centralise all your team’s tools in one place. With customisable groups, permissions, and metadata, it makes managing tools efficient and organised. Additionally, it features a news section to keep your team informed about the latest developments in your industry.
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
----
+## About Laravel
 
-## Features
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-### Tools Management:
-- Add, edit, and delete tools.
-- Categorise tools with custom groups.
-- Assign group-level permissions for better access control.
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-### User Management:
-- Add and edit users with group assignments.
-- Assign administrative privileges to selected users.
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-### Tech News Integration:
-- Display the latest tech news from configurable sources and keywords.
-- Uses the NewsAPI for fetching articles.
+## Learning Laravel
 
-### Custom Metadata:
-- Add descriptions, images, and colours to tools for better organisation and visibility.
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
----
+You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
 
-## Installation
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-### Prerequisites
-- PHP 8.2+
-- Composer
-- MySQL or MariaDB database
-- Web server (Apache or Nginx)
-- Write permissions for `storage/` and `bootstrap/cache/` directories.
+## Laravel Sponsors
 
----
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### Steps
+### Premium Partners
 
-1. **Clone the repository**
+- **[Vehikl](https://vehikl.com/)**
+- **[Tighten Co.](https://tighten.co)**
+- **[WebReinvent](https://webreinvent.com/)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
+- **[Cyber-Duck](https://cyber-duck.co.uk)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Jump24](https://jump24.co.uk)**
+- **[Redberry](https://redberry.international/laravel/)**
+- **[Active Logic](https://activelogic.com)**
+- **[byte5](https://byte5.de)**
+- **[OP.GG](https://op.gg)**
 
-   Run the following commands:
+## Contributing
 
-        git clone https://github.com/russsseeelll/cosetools.git cd cosetools
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
+## Code of Conduct
 
-2. **Install dependencies**
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-   Use Composer to install the required PHP dependencies:
+## Security Vulnerabilities
 
-        composer install
-
-
-3. **Copy the `.env.example` file to `.env`**
-
-   Create a new `.env` file for your environment variables:
-
-        cp .env.example .env
-
-
-4. **Configure the `.env` file**
-
-   Update the following database configuration values:
-
-        DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_PORT=3306 DB_DATABASE=cosetools DB_USERNAME=root DB_PASSWORD=yourpassword
-
-
-5. **Generate the application key**
-
-   Run the following command to generate an application key:
-
-        php artisan key:generate
-
-
-6. **Run migrations to set up the database**
-
-   Execute the database migrations:
-
-        php artisan migrate
-
-
-7. **Set permissions for writable directories**
-
-   Ensure `storage` and `bootstrap/cache` directories are writable:
-
-        chmod -R 775 storage bootstrap/cache chown -R www-data:www-data storage bootstrap/cache
-
-
-8. **Serve the application**
-
-   Start the Laravel development server:
-
-        php artisan serve
-
-
-By default, the application will be available at `http://localhost:8000`.
-
----
-
-## Configuring the News Section
-
-The news feature allows you to display the latest tech news from selected sources using the NewsAPI.
-
-### Steps to Configure
-
-1. **Enable the News Section**
-
-   In the `.env` file, set `NEWS_ENABLED` to `true`:
-
-        NEWS_ENABLED=true
-
-
-2. **Add Your NewsAPI Key**
-
-   Obtain an API key from NewsAPI and add it to the `.env` file:
-
-        NEWS_API_KEY=your_news_api_key
-
-
-3. **Set the News API URL**
-
-   Use the default endpoint for NewsAPI:
-
-        NEWS_API_URL=https://newsapi.org/v2/everything
-
-
-4. **Configure Keywords and Domains**
-
-   Define the keywords and domains for filtering news articles. Example configuration:
-
-        NEWS_KEYWORDS="education technology,edtech,AI in education,robotics in classrooms,cybersecurity,cloud computing" 
-        NEWS_DOMAINS=techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com
-
-
-5. **Clear and Cache Config**
-
-   Run the following commands to ensure Laravel picks up the updated environment variables:
-
-        php artisan config:clear php artisan config:cache
-
-
-6. **Fetch News**
-
-   Use the artisan command to fetch the latest news and populate the database:
-
-        php artisan tech-news:fetch
-
-
----
-
-## Usage
-
-### Admin Features
-
-Admins have full control over the tools and users in the portal, including:
-
-- **Managing Tools**:
-    - Add new tools with names, URLs, descriptions, images, and group permissions.
-    - Edit existing tools to update details or change group assignments.
-    - Delete tools that are no longer needed.
-    - Customise tool visibility and order on the dashboard.
-
-- **Managing Users**:
-    - Add users with group assignments and optional admin privileges.
-    - Edit user details such as their assigned groups or admin status.
-    - Remove users when they no longer need access.
-
-### Regular User View
-
-- Regular users only see tools assigned to their groups.
-- The tools are displayed as clickable cards with their name, description, and image.
-- Users cannot see or manage other users or their tools. Users can change the order and visibility of tools assigned to them using the modal.
-
-### News Section
-
-- If enabled (`NEWS_ENABLED=true` in the `.env` file):
-    - Displays a sidebar with the latest tech news based on keywords and sources.
-    - News articles are fetched via the [NewsAPI](https://newsapi.org/).
-    - Users can click on news headlines to read the full article in a new tab.
-
-
-
----
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
 
-This project is open-source and available under the MIT License.
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
