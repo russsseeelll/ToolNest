@@ -43,7 +43,7 @@ class FetchTechNews extends Command
         $to = now()->toDateString();
 
         $articles = [];
-        $urls = []; // Keep track of unique URLs
+        $urls = []; // Track unique URLs
 
         try {
             foreach ($keywordsList as $keywords) {
@@ -56,20 +56,24 @@ class FetchTechNews extends Command
                     'to' => $to,
                     'language' => 'en',
                     'sortBy' => 'publishedAt',
-                    'pageSize' => 20 - count($articles),
+                    'pageSize' => 20, // Request 20 articles per keyword
                 ]);
 
                 if ($response->successful()) {
                     $fetchedArticles = $response->json('articles') ?? [];
+                    $this->info("Fetched " . count($fetchedArticles) . " articles for '{$keywords}'.");
+
                     foreach ($fetchedArticles as $article) {
-                        // Avoid duplicates by checking the URL
                         if (!in_array($article['url'], $urls)) {
                             $articles[] = $article;
                             $urls[] = $article['url'];
                         }
                     }
+                } else {
+                    $this->error("Failed to fetch articles for '{$keywords}': " . $response->body());
                 }
 
+                // Stop if we've reached 20 unique articles
                 if (count($articles) >= 20) {
                     break;
                 }
