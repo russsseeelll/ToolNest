@@ -30,7 +30,6 @@ class FetchTechNews extends Command
     public function handle()
     {
 
-        \Dotenv\Dotenv::createImmutable(base_path())->load();
         $this->info('Fetching tech news from the API...');
 
         $apiKey = env('NEWS_API_KEY');
@@ -106,11 +105,9 @@ class FetchTechNews extends Command
 
             // Clear the news table
             $this->info('Deleting old articles from the database...');
-            DB::transaction(function () {
-                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-                News::truncate();
-                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-            });
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            News::truncate();
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
             // Insert articles into the database
             $this->info('Inserting articles into the database...');
