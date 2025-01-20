@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', env('ORG_NAME', 'OrgName') . 'Tools')
+@section('title', env('ORG_NAME', 'OrgName') . ' Tools')
 
 @section('content')
     <main class="container mx-auto py-12 px-6 flex flex-wrap lg:flex-nowrap">
