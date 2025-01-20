@@ -29,6 +29,8 @@ class FetchTechNews extends Command
      */
     public function handle()
     {
+
+        \Dotenv\Dotenv::createImmutable(base_path())->load();
         $this->info('Fetching tech news from the API...');
 
         $apiKey = env('NEWS_API_KEY');
