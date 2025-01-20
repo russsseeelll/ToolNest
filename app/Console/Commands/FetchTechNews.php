@@ -22,7 +22,7 @@ class FetchTechNews extends Command
      *
      * @var string
      */
-    protected $description = 'Fetch and store 20 random tech news articles focused on education and new technologies';
+    protected $description = 'Fetch and store 20 random tech news articles';
 
     /**
      * Execute the console command.
@@ -33,29 +33,67 @@ class FetchTechNews extends Command
 
         $apiKey = '38b207b9cf2b49f4ac9f78b0951d9a28';
         $url = 'https://newsapi.org/v2/everything';
-        $keywords = 'education technology, edtech, new technology, AI in education, VR in education, robotics in classrooms, future of learning, smart classrooms';
-        $domains = 'edtechmagazine.com,educationaltechnology.net,techlearning.com,elearningindustry.com,insidehighered.com,thejournal.com';
+        $keywordsList = [
+            'education technology', 'edtech', 'AI in education', 'robotics in classrooms', 'smart classrooms',
+            'infrastructure', 'NVIDIA', 'AI research', 'cloud computing', 'data centers',
+            'machine learning', 'AR and VR', 'IoT', 'developer tools', 'quantum computing',
+            'cybersecurity', 'open-source', '5G', 'AI ethics', 'blockchain technology'
+        ];
+        $domains = 'techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com,bbc.com,forbes.com,engadget.com,zdnet.com,reuters.com,guardian.co.uk';
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
-        try {
-            $response = Http::timeout(10)->get($url, [
-                'apiKey' => $apiKey,
-                'q' => $keywords,
-                'domains' => $domains,
-                'from' => $from,
-                'to' => $to,
-                'language' => 'en',
-                'sortBy' => 'publishedAt',
-                'pageSize' => 20,
-            ]);
+        $articles = [];
+        $urls = []; // Keep track of URLs for deduplication
 
-            if (!$response->successful()) {
-                $this->error('Failed to fetch news. Response: ' . $response->body());
+        try {
+            foreach ($keywordsList as $keywords) {
+                $this->info("Searching with keywords: {$keywords}...");
+                $response = Http::timeout(10)->get($url, [
+                    'apiKey' => $apiKey,
+                    'q' => $keywords,
+                    'domains' => $domains,
+                    'from' => $from,
+                    'to' => $to,
+                    'language' => 'en',
+                    'sortBy' => 'publishedAt',
+                    'pageSize' => 20, // Request 20 articles per query
+                ]);
+
+                if ($response->successful()) {
+                    $fetchedArticles = $response->json('articles') ?? [];
+                    $this->info("Fetched " . count($fetchedArticles) . " articles for '{$keywords}'.");
+
+                    foreach ($fetchedArticles as $article) {
+                        if (!in_array($article['url'], $urls)) {
+                            $articles[] = $article;
+                            $urls[] = $article['url'];
+                        }
+
+                        if (count($articles) >= 20) {
+                            break 2; // Stop completely once we have 20 unique articles
+                        }
+                    }
+                } else {
+                    $this->error("Failed to fetch articles for '{$keywords}': " . $response->body());
+                }
+            }
+
+            if (empty($articles)) {
+                $this->error('No articles found for the given search criteria.');
                 return 1;
             }
 
-            $articles = $response->json('articles') ?? [];
+            // Display articles before inserting
+            $this->info('Fetched Articles:');
+            foreach ($articles as $article) {
+                $this->line('--------------------------------');
+                $this->line('Title: ' . ($article['title'] ?? 'No Title'));
+                $this->line('Description: ' . ($article['description'] ?? 'No Description'));
+                $this->line('URL: ' . $article['url']);
+                $this->line('Source: ' . ($article['source']['name'] ?? 'Unknown'));
+                $this->line('Published At: ' . ($article['publishedAt'] ?? 'No Date'));
+            }
 
             // Clear the news table
             $this->info('Truncating the news table...');
@@ -63,6 +101,7 @@ class FetchTechNews extends Command
             News::truncate();
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
+            // Insert articles into the database
             $this->info('Inserting articles into the database...');
             foreach ($articles as $article) {
                 News::create([
@@ -76,7 +115,7 @@ class FetchTechNews extends Command
                 ]);
             }
 
-            $this->info('Successfully fetched and stored 20 tech news articles.');
+            $this->info('Successfully fetched and stored tech news articles.');
         } catch (\Exception $e) {
             $this->error('Error fetching tech news: ' . $e->getMessage());
             Log::error('FetchTechNews command failed.', ['error' => $e->getMessage()]);
