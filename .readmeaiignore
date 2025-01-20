@@ -1,0 +1,10 @@
+vendor/
+bootstrap/
+storage/
+node_modules/
+public/
+resources/lang/
+tests/
+.env
+.env.example
+README.md
