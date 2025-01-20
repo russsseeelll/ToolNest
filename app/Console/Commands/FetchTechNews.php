@@ -36,14 +36,14 @@ class FetchTechNews extends Command
         $keywordsList = [
             'education technology', 'edtech', 'AI in education', 'robotics in classrooms', 'smart classrooms',
             'infrastructure', 'NVIDIA', 'AI research', 'cloud computing', 'data centers',
-            'machine learning', 'AR and VR', 'IoT', 'developer tools', 'quantum computing',
-            'cybersecurity', 'open-source', '5G', 'AI ethics', 'blockchain technology'
+            'machine learning', 'AR and VR', 'IoT', 'developer tools'
         ];
-        $domains = 'techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com,bbc.com,forbes.com,engadget.com,zdnet.com,reuters.com,guardian.co.uk';
+        $domains = 'techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com';
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
         $articles = [];
+        $urls = []; // Keep track of unique URLs
 
         try {
             foreach ($keywordsList as $keywords) {
@@ -61,7 +61,13 @@ class FetchTechNews extends Command
 
                 if ($response->successful()) {
                     $fetchedArticles = $response->json('articles') ?? [];
-                    $articles = array_merge($articles, $fetchedArticles);
+                    foreach ($fetchedArticles as $article) {
+                        // Avoid duplicates by checking the URL
+                        if (!in_array($article['url'], $urls)) {
+                            $articles[] = $article;
+                            $urls[] = $article['url'];
+                        }
+                    }
                 }
 
                 if (count($articles) >= 20) {
