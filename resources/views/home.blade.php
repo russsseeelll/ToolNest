@@ -71,6 +71,7 @@
         </div>
 
         <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
+            @if(env('NEWS_ENABLED', false)) <!-- Default to false if NEWS_ENABLED is not set -->
             <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
                 <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Tech News</h2>
                 <div id="news-section" class="space-y-4 max-h-[600px] overflow-y-auto">
@@ -84,7 +85,7 @@
                                 <div class="mt-2 text-xs text-gray-600 flex justify-between">
                                     <span><strong>Source:</strong> {{ $news->source_name }}</span>
                                     <span><strong>Published:</strong> {{
-                                        Carbon\Carbon::parse($news->published_at)->format('d/m/Y, h:i A') }}</span>
+                                    Carbon\Carbon::parse($news->published_at)->format('d/m/Y, h:i A') }}</span>
                                 </div>
                             </div>
                         @endforeach
@@ -93,7 +94,9 @@
                     @endif
                 </div>
             </div>
+            @endif
         </aside>
+
     </main>
 
     <div id="customiseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
