@@ -31,15 +31,10 @@ class FetchTechNews extends Command
     {
         $this->info('Fetching tech news from the API...');
 
-        $apiKey = '38b207b9cf2b49f4ac9f78b0951d9a28';
-        $url = 'https://newsapi.org/v2/everything';
-        $keywordsList = [
-            'education technology', 'edtech', 'AI in education', 'robotics in classrooms', 'smart classrooms',
-            'infrastructure', 'NVIDIA', 'AI research', 'cloud computing', 'data centers',
-            'machine learning', 'AR and VR', 'IoT', 'developer tools', 'quantum computing',
-            'cybersecurity', 'open-source', '5G', 'AI ethics', 'blockchain technology'
-        ];
-        $domains = 'techcrunch.com,thenextweb.com,wired.com,arstechnica.com,theverge.com,venturebeat.com,bbc.com,forbes.com,engadget.com,zdnet.com,reuters.com,guardian.co.uk';
+        $apiKey = env('NEWS_API_KEY');
+        $url = env('NEWS_API_URL');
+        $keywordsList = explode(',', env('NEWS_KEYWORDS'));
+        $domains = env('NEWS_DOMAINS');
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
@@ -96,10 +91,12 @@ class FetchTechNews extends Command
             }
 
             // Clear the news table
-            $this->info('Truncating the news table...');
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-            News::truncate();
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            $this->info('Deleting old articles from the database...');
+            DB::transaction(function () {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                News::truncate();
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            });
 
             // Insert articles into the database
             $this->info('Inserting articles into the database...');
