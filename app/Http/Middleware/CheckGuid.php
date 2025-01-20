@@ -11,7 +11,7 @@ class CheckGuid
 {
     public function handle(Request $request, Closure $next)
     {
-        $guid = $request->server('HTTP_SHIBBOLETH_GUID', env('TEST_GUID', 'rmi30m'));
+        $guid = $request->server('HTTP_SHIBBOLETH_GUID', env('TEST_GUID'));
 
         if (!$guid) {
             return redirect()->route('unauthorized')->with('error', 'GUID not found.');
