@@ -38,6 +38,18 @@ class FetchTechNews extends Command
         $from = now()->subDay()->toDateString();
         $to = now()->toDateString();
 
+        // Debugging output
+        $this->info("API Key: {$apiKey}");
+        $this->info("API URL: {$url}");
+        $this->info("Domains: {$domains}");
+        $this->info("Keywords: " . implode(', ', $keywordsList));
+
+        // If any are null, throw an error
+        if (!$apiKey || !$url || !$domains || empty($keywordsList)) {
+            $this->error('One or more environment variables are missing.');
+            return 1;
+        }
+
         $articles = [];
         $urls = []; // Keep track of URLs for deduplication
 
