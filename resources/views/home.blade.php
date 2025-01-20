@@ -4,15 +4,12 @@
 
 @section('content')
     <main class="container mx-auto py-12 px-6 flex flex-wrap lg:flex-nowrap">
-
-        <div class="w-full lg:w-3/4 lg:mr-6">
-
+        <div
+            class="w-full {{ env('NEWS_ENABLED', false) ? 'lg:w-3/4 lg:mr-6' : 'lg:w-full' }}">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-
                 <h1 class="text-2xl font-bold text-[#003865]">Your Tools</h1>
 
                 <div class="flex items-center space-x-4 w-full md:w-auto">
-
                     <form action="{{ route('home') }}" method="GET" class="flex flex-grow md:flex-grow-0">
                         <input
                             type="text"
@@ -35,7 +32,6 @@
             @if($tools->isEmpty())
                 <p class="text-center text-gray-500">No tools found. Try adjusting your search.</p>
             @else
-
                 <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     @foreach($tools as $tool)
                         @if($tool->visible)
@@ -63,41 +59,40 @@
                     @endforeach
                 </div>
 
-
                 <div class="mt-6 flex justify-center">
                     {{ $tools->appends(['search' => $search])->onEachSide(1)->links('pagination::tailwind') }}
                 </div>
             @endif
         </div>
 
-        <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
-            @if(env('NEWS_ENABLED', false)) <!-- Default to false if NEWS_ENABLED is not set -->
-            <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest Tech News</h2>
-                <div id="news-section" class="space-y-4 max-h-[600px] overflow-y-auto">
-                    @if($techNews->isNotEmpty())
-                        @foreach($techNews as $news)
-                            <div class="bg-gray-100 p-4 rounded-lg border border-gray-300 shadow-sm hover:shadow-lg transition-shadow duration-200">
-                                <a href="{{ $news->url }}" target="_blank" class="block">
-                                    <h3 class="font-semibold text-lg mb-2">{{ $news->title }}</h3>
-                                    <p class="text-sm text-gray-700 mb-2 truncate">{{ $news->description }}</p>
-                                </a>
-                                <div class="mt-2 text-xs text-gray-600 flex justify-between">
-                                    <span><strong>Source:</strong> {{ $news->source_name }}</span>
-                                    <span><strong>Published:</strong> {{
-                                    Carbon\Carbon::parse($news->published_at)->format('d/m/Y, h:i A') }}</span>
+        @if(env('NEWS_ENABLED', false))
+            <aside class="w-full lg:w-1/4 mt-12 lg:mt-0">
+                <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Latest News</h2>
+                    <div id="news-section" class="space-y-4 max-h-[600px] overflow-y-auto">
+                        @if($techNews->isNotEmpty())
+                            @foreach($techNews as $news)
+                                <div class="bg-gray-100 p-4 rounded-lg border border-gray-300 shadow-sm hover:shadow-lg transition-shadow duration-200">
+                                    <a href="{{ $news->url }}" target="_blank" class="block">
+                                        <h3 class="font-semibold text-lg mb-2">{{ $news->title }}</h3>
+                                        <p class="text-sm text-gray-700 mb-2 truncate">{{ $news->description }}</p>
+                                    </a>
+                                    <div class="mt-2 text-xs text-gray-600 flex justify-between">
+                                        <span><strong>Source:</strong> {{ $news->source_name }}</span>
+                                        <span><strong>Published:</strong> {{
+                                        Carbon\Carbon::parse($news->published_at)->format('d/m/Y, h:i A') }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <p class="text-center text-gray-500">No tech news available at the moment.</p>
-                    @endif
+                            @endforeach
+                        @else
+                            <p class="text-center text-gray-500">No tech news available at the moment.</p>
+                        @endif
+                    </div>
                 </div>
-            </div>
-            @endif
-        </aside>
-
+            </aside>
+        @endif
     </main>
+
 
     <div id="customiseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
         <div class="bg-white w-full max-w-lg p-6 rounded-lg shadow-2xl transform transition-all duration-300 scale-95">
