@@ -6,12 +6,10 @@ use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\CheckUsername;
 
-// Define the SAML login route, always available
 Route::get('/saml/login', function () {
     return redirect()->route('home');
 })->middleware(CheckUsername::class)->name('saml.login');
 
-// Check if FORCED_SAML_LOGIN is enabled
 if (env('FORCED_SAML_LOGIN', false)) {
     Route::get('/login', fn() => redirect()->route('saml.login'))->name('login');
     Route::post('/login', fn() => redirect()->route('saml.login'));
@@ -31,6 +29,10 @@ if (env('FORCED_SAML_LOGIN', false)) {
     Route::post('/forgot-password', [AuthController::class, 'processForgotPassword']);
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 }
+
+// Define password reset routes outside FORCED_SAML_LOGIN block
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'processResetPassword'])->name('password.update');
 
 // Protected routes with CheckUsername middleware
 Route::middleware(['auth', CheckUsername::class])->group(function () {

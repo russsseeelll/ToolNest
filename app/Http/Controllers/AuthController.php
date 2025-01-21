@@ -5,26 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use App\Models\User;
 
 class AuthController extends Controller
 {
-    /**
-     * Show the login form.
-     *
-     * @return \Illuminate\View\View
-     */
     public function showLogin()
     {
         return view('auth.login');
     }
 
-    /**
-     * Process the login request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function processLogin(Request $request)
     {
         $request->validate(
@@ -44,7 +34,6 @@ class AuthController extends Controller
             return redirect('/saml/login');
         }
 
-        // Attempt login with username and password
         if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
             return redirect()->route('home')->with('success', 'Logged in successfully.');
         }
@@ -52,22 +41,11 @@ class AuthController extends Controller
         return back()->withErrors(['Invalid credentials. Please try again.']);
     }
 
-    /**
-     * Show the registration form.
-     *
-     * @return \Illuminate\View\View
-     */
     public function showRegister()
     {
         return view('auth.register');
     }
 
-    /**
-     * Process the registration request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function processRegister(Request $request)
     {
         $request->validate(
@@ -112,22 +90,11 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
     }
 
-    /**
-     * Show the forgot password form.
-     *
-     * @return \Illuminate\View\View
-     */
     public function showForgotPassword()
     {
         return view('auth.forgot-password');
     }
 
-    /**
-     * Process the forgot password request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function processForgotPassword(Request $request)
     {
         $request->validate(
@@ -141,21 +108,57 @@ class AuthController extends Controller
             ]
         );
 
-        // Add your logic for sending a password reset email here
+        $status = Password::sendResetLink($request->only('email'));
 
-        return back()->with('success', 'If your email exists, a password reset link has been sent.');
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('success', 'A password reset link has been sent to your email.')
+            : back()->with('error', 'Failed to send the password reset link.');
+    }
+
+    public function showResetPasswordForm($token)
+    {
+        return view('auth.reset-password', ['token' => $token]);
+    }
+
+    public function processResetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email|exists:users,email',
+            'password' => [
+                'required',
+                'string',
+                'confirmed',
+                'min:8',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*?&]/',
+            ],
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('success', 'Your password has been reset successfully.')
+            : back()->withErrors(['email' => [__($status)]]);
     }
 
     public function logout()
     {
         Auth::logout();
 
-        // Check if FORCED_SAML_LOGIN is enabled and SAML_LOGOUT_URL is set
         if (env('FORCED_SAML_LOGIN', false) && env('SAML_LOGOUT_URL')) {
             return redirect(env('SAML_LOGOUT_URL'));
         }
 
-        // Default logout redirection
         return redirect()->route('login')->with('success', 'Logged out successfully.');
     }
 }
