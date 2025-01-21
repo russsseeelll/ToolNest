@@ -30,7 +30,6 @@ if (env('FORCED_SAML_LOGIN', false)) {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 }
 
-// Define password reset routes outside FORCED_SAML_LOGIN block
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'processResetPassword'])->name('password.update');
 
