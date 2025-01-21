@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit/Add Tools and Users -', env('ORG_NAME', 'OrgName') . ' Tools')
+@section('title', 'Management', env('ORG_NAME', 'OrgName') . ' Tools')
 
 
 @section('content')
@@ -52,8 +52,9 @@
 
     <!-- User Manager Section -->
     <div id="user-manager-section" class="flex w-full mt-6 {{ isset($tool) ? 'hidden' : '' }}">
-        @include('partials.user_manager')
+        @include('partials.user_manager', ['search' => $search ?? ''])
     </div>
+
 @endsection
 
 @section('scripts')

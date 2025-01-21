@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
 
         // Seed User
         $user = User::create([
-            'guid' => 'rmi30m',
+            'username' => 'rmi30m',
             'fullname' => 'Russell McInnes',
             'admin' => true,
         ]);

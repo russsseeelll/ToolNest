@@ -12,7 +12,17 @@ class UserController extends Controller
 {
     public function manage(Request $request, $userId = null)
     {
-        $users = User::with('groups')->get();
+        $search = $request->input('search', ''); // Default to an empty search query
+
+        // Filter users based on search query
+        $users = User::with('groups')
+            ->when($search, function ($query) use ($search) {
+                $query->where('fullname', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->paginate(10); // Add pagination with 10 users per page
+
         $groups = Group::pluck('groupname');
         $tools = Tool::all();
         $colours = Colour::all();
@@ -29,22 +39,23 @@ class UserController extends Controller
 
         session()->flash('activeTab', 'user-manager');
 
-        return view('manage', compact('users', 'user', 'userGroups', 'groups', 'tools', 'colours'));
+        return view('manage', compact('users', 'user', 'userGroups', 'groups', 'tools', 'colours', 'search'));
     }
 
     public function store(Request $request)
     {
-
         $request->validate([
-            'guid' => 'required|unique:users,guid',
+            'username' => 'required|unique:users,username|max:255',
             'fullname' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email|max:255',
             'admin' => 'required|boolean',
             'groups' => 'nullable|string',
         ]);
 
         $user = User::create([
-            'guid' => $request->guid,
+            'username' => $request->username,
             'fullname' => $request->fullname,
+            'email' => $request->email,
             'admin' => $request->admin,
         ]);
 
@@ -58,15 +69,16 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-
         $request->validate([
             'fullname' => 'required|string|max:255',
+            'email' => "required|email|unique:users,email,{$user->id}|max:255",
             'admin' => 'required|boolean',
             'groups' => 'nullable|string',
         ]);
 
         $user->update([
             'fullname' => $request->fullname,
+            'email' => $request->email,
             'admin' => $request->admin,
         ]);
 
@@ -90,8 +102,6 @@ class UserController extends Controller
 
         return redirect()->route('manage')->with('success', 'User deleted successfully.');
     }
-
-
 
     private function getGroupIdsFromNames($groupNames)
     {

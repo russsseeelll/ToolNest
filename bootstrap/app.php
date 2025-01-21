@@ -3,10 +3,9 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\CheckGuid;
+use App\Http\Middleware\CheckUsername;
 use App\Http\Middleware\AdminMiddleware;
 use App\Console\Commands\FetchTechNews;
-
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(CheckGuid::class);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
 

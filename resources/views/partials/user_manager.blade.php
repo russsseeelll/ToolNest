@@ -33,10 +33,10 @@
             @method('PUT')
         @endif
 
-        <!-- GUID -->
+        <!-- username -->
         <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-guid">GUID</label>
-            <input type="text" id="user-guid" name="guid" value="{{ old('guid', $user->guid ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter user GUID" required>
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-username">Username</label>
+            <input type="text" id="user-username" name="username" value="{{ old('username', $user->username ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter user Username" required>
         </div>
 
         <!-- Full Name -->

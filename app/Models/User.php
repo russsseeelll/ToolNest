@@ -12,10 +12,12 @@ class User extends Authenticatable
 
     // Allow mass assignment for these fields
     protected $fillable = [
-        'guid',
+        'username',
         'fullname',
+        'email',
+        'password',
         'admin',
-        'tool_preferences', // Add this
+        'tool_preferences',
     ];
 
     // Cast the tool_preferences column to JSON
