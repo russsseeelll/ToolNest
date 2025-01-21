@@ -7,6 +7,7 @@ use App\Models\Group;
 use App\Models\Colour;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 
 class UserController extends Controller
 {
@@ -107,5 +108,16 @@ class UserController extends Controller
     {
         $groupNamesArray = array_map('trim', explode(',', $groupNames));
         return Group::whereIn('groupname', $groupNamesArray)->pluck('id')->toArray();
+    }
+
+    public function sendPasswordReset(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $status = Password::sendResetLink(['email' => $user->email]);
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('success', 'Password reset email sent to ' . $user->email)
+            : back()->with('error', 'Failed to send password reset link.');
     }
 }

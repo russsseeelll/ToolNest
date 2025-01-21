@@ -1,24 +1,49 @@
-<!-- Left Pane: Existing Users List -->
 <div class="w-full lg:w-1/4 lg:mr-6">
-    <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6 h-full max-h-[40rem] flex flex-col">
+    <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-6 h-full flex flex-col">
         <h2 class="text-2xl font-semibold mb-4 text-[#003865]">Existing Users</h2>
-        <ul class="space-y-2 flex-grow overflow-y-auto">
+        <ul class="space-y-4">
             @foreach($users as $userItem)
-                <li class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm">
-                    <span>{{ $userItem->fullname }}</span>
-                    <div class="flex space-x-2">
-                        <a href="{{ route('manage.user', $userItem->id) }}" class="bg-[#003865] hover:bg-[#002a52] text-white px-4 py-2 rounded-lg transition">Edit</a>
-                        <form action="{{ route('users.destroy', $userItem->id) }}" method="POST" class="inline-block">
-                            @csrf
-                            @method('DELETE')
-                            <button class="bg-[#7d2239] hover:bg-[#5c1a2b] text-white px-4 py-2 rounded-lg transition" type="submit">Delete</button>
-                        </form>
+                <li class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-300 shadow-sm relative">
+                    <!-- User Info -->
+                    <div>
+                        <p class="font-semibold">{{ $userItem->fullname }}</p>
+                        <p class="text-sm text-gray-500">{{ $userItem->email }}</p>
+                    </div>
+
+                    <!-- Actions Dropdown -->
+                    <div class="relative">
+                        <button
+                            id="dropdown-icon-{{ $userItem->id }}"
+                            class="text-[#003865] hover:text-[#002a52] focus:outline-none"
+                            onclick="toggleDropdown({{ $userItem->id }})">
+                            <i class="fas fa-cog text-2xl"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu-{{ $userItem->id }}"
+                             class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-50">
+                            <a href="{{ route('manage.user', $userItem->id) }}"
+                               class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition">
+                                <i class="fa-solid fa-pen-to-square mr-2"></i> Edit
+                            </a>
+                            <button
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition w-full text-left"
+                                onclick="openModal('delete-modal-{{ $userItem->id }}')">
+                                <i class="fa-solid fa-trash mr-2"></i> Delete
+                            </button>
+                            <button
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition w-full text-left"
+                                onclick="openModal('reset-modal-{{ $userItem->id }}')">
+                                <i class="fa-solid fa-envelope mr-2"></i> Send Reset
+                            </button>
+                        </div>
                     </div>
                 </li>
             @endforeach
         </ul>
+
         <!-- Add New User Button -->
-        <div class="mt-4 sticky bottom-0 bg-white pt-2">
+        <div class="mt-6">
             <a href="{{ route('manage', ['tab' => 'user-manager']) }}" class="block bg-[#385a4f] hover:bg-[#2c483d] text-white p-3 rounded-lg shadow-md text-center transition">Add New User</a>
         </div>
     </div>
@@ -33,10 +58,16 @@
             @method('PUT')
         @endif
 
-        <!-- username -->
+        <!-- Email -->
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="user-email">Email</label>
+            <input type="email" id="user-email" name="email" value="{{ old('email', $user->email ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter email address" required>
+        </div>
+
+        <!-- Username -->
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="user-username">Username</label>
-            <input type="text" id="user-username" name="username" value="{{ old('username', $user->username ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter user Username" required>
+            <input type="text" id="user-username" name="username" value="{{ old('username', $user->username ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter username" required>
         </div>
 
         <!-- Full Name -->
@@ -67,4 +98,37 @@
             <button type="submit" class="bg-[#003865] text-white px-4 py-2 rounded-lg">{{ isset($user) ? 'Update User' : 'Save User' }}</button>
         </div>
     </form>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal-{{ $userItem->id }}"
+     class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h2 class="text-lg font-semibold text-[#003865] mb-4">Confirm Delete</h2>
+        <p>Are you sure you want to delete <span class="font-semibold">{{ $userItem->fullname }}</span>?</p>
+        <div class="flex justify-end mt-4 space-x-2">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-lg" onclick="closeModal('delete-modal-{{ $userItem->id }}')">Cancel</button>
+            <form action="{{ route('users.destroy', $userItem->id) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="bg-[#7d2239] text-white px-4 py-2 rounded-lg">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Confirmation Modal -->
+<div id="reset-modal-{{ $userItem->id }}"
+     class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h2 class="text-lg font-semibold text-[#003865] mb-4">Confirm Password Reset</h2>
+        <p>Are you sure you want to send a password reset email to <span class="font-semibold">{{ $userItem->email }}</span>?</p>
+        <div class="flex justify-end mt-4 space-x-2">
+            <button class="bg-gray-500 text-white px-4 py-2 rounded-lg" onclick="closeModal('reset-modal-{{ $userItem->id }}')">Cancel</button>
+            <form action="{{ route('users.sendPasswordReset', $userItem->id) }}" method="POST">
+                @csrf
+                <button type="submit" class="bg-[#385a4f] text-white px-4 py-2 rounded-lg">Send Reset</button>
+            </form>
+        </div>
+    </div>
 </div>

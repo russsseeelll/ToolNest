@@ -179,5 +179,41 @@
                 }
             });
         });
+
+        function toggleDropdown(userId) {
+            const dropdownMenu = document.getElementById(`dropdown-menu-${userId}`);
+            dropdownMenu.classList.toggle('hidden');
+
+            // Adjust positioning for visibility
+            const rect = dropdownMenu.getBoundingClientRect();
+            if (rect.bottom > window.innerHeight) {
+                dropdownMenu.style.top = 'auto';
+                dropdownMenu.style.bottom = '100%';
+            } else {
+                dropdownMenu.style.top = '100%';
+                dropdownMenu.style.bottom = 'auto';
+            }
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+        }
+
+        document.addEventListener('click', function (event) {
+            const dropdownButtons = document.querySelectorAll('[id^="dropdown-icon-"]');
+            dropdownButtons.forEach(button => {
+                const userId = button.id.split('-').pop();
+                const dropdownMenu = document.getElementById(`dropdown-menu-${userId}`);
+                if (!button.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+        });
     </script>
 @endsection

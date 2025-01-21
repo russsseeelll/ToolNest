@@ -32,6 +32,7 @@ if (env('FORCED_SAML_LOGIN', false)) {
 
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
 Route::post('/reset-password', [AuthController::class, 'processResetPassword'])->name('password.update');
+Route::post('/users/{id}/send-password-reset', [UserController::class, 'sendPasswordReset'])->name('users.sendPasswordReset');
 
 // Protected routes with CheckUsername middleware
 Route::middleware(['auth', CheckUsername::class])->group(function () {
