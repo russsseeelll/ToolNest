@@ -1,6 +1,6 @@
-# CoSE IT Tools Portal
+# ToolNest
 
-The CoSE IT Tools Portal is a Laravel-based web application designed to centralise all your team’s tools in one place. With customisable groups, permissions, and metadata, it makes managing tools efficient and organised. Additionally, it features a news section to keep your team informed about the latest developments in your industry.
+ToolNest is a Laravel-based web application designed to centralise all your team’s tools in one place. With customisable groups, permissions, and metadata, it makes managing tools efficient and organised. Additionally, it features a news section to keep your team informed about the latest developments in your industry.
 
 ---
 
@@ -41,7 +41,7 @@ The CoSE IT Tools Portal is a Laravel-based web application designed to centrali
 
    Run the following commands:
 
-        git clone https://github.com/russsseeelll/cosetools.git cd cosetools
+        git clone https://github.com/russsseeelll/toolnest.git cd toolnest
 
 
 2. **Install dependencies**
@@ -62,7 +62,7 @@ The CoSE IT Tools Portal is a Laravel-based web application designed to centrali
 
    Update the following database configuration values:
 
-        DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_PORT=3306 DB_DATABASE=cosetools DB_USERNAME=root DB_PASSWORD=yourpassword
+        DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_PORT=3306 DB_DATABASE=toolnest DB_USERNAME=root DB_PASSWORD=yourpassword
 
 
 5. **Generate the application key**
