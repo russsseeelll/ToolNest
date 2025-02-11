@@ -15,14 +15,8 @@ class UserController extends Controller
     {
         $search = $request->input('search', ''); // Default to an empty search query
 
-        // Filter users based on search query
-        $users = User::with('groups')
-            ->when($search, function ($query) use ($search) {
-                $query->where('fullname', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->paginate(10); // Add pagination with 10 users per page
+        // Always get a filtered and paginated list of users
+        $users = self::getFilteredUsers($request); // Use the static method below
 
         $groups = Group::pluck('groupname');
         $tools = Tool::all();
@@ -30,7 +24,6 @@ class UserController extends Controller
 
         $user = null;
         $userGroups = '';
-
         if ($userId) {
             $user = User::with('groups')->find($userId);
             if ($user) {
@@ -41,6 +34,24 @@ class UserController extends Controller
         session()->flash('activeTab', 'user-manager');
 
         return view('manage', compact('users', 'user', 'userGroups', 'groups', 'tools', 'colours', 'search'));
+    }
+
+    /**
+     * Return a filtered and paginated list of users.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public static function getFilteredUsers(Request $request)
+    {
+        $search = $request->input('search', '');
+        return User::with('groups')
+            ->when($search, function ($query, $search) {
+                $query->where('fullname', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->paginate(3); // or change the number to suit your needs
     }
 
     public function store(Request $request)
@@ -65,7 +76,9 @@ class UserController extends Controller
             $user->groups()->sync($groupIds);
         }
 
-        return redirect()->route('manage', ['user' => $user->id])->with('success', 'User created successfully.');
+        // Preserve query parameters so that the tab, search, and even pagination page remain intact
+        return redirect()->route('manage', array_merge($request->query(), ['user' => $user->id]))
+            ->with('success', 'User created successfully.');
     }
 
     public function update(Request $request, User $user)
@@ -88,10 +101,11 @@ class UserController extends Controller
             $user->groups()->sync($groupIds);
         }
 
-        return redirect()->route('manage', ['user' => $user->id])->with('success', 'User updated successfully.');
+        return redirect()->route('manage', array_merge($request->query(), ['user' => $user->id]))
+            ->with('success', 'User updated successfully.');
     }
 
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         if (auth()->id() === $user->id) {
             return redirect()->route('manage')
@@ -101,7 +115,8 @@ class UserController extends Controller
         $user->groups()->detach();
         $user->delete();
 
-        return redirect()->route('manage')->with('success', 'User deleted successfully.');
+        return redirect()->route('manage', array_merge($request->query(), ['user' => $user->id]))
+            ->with('success', 'User deleted successfully.');
     }
 
     private function getGroupIdsFromNames($groupNames)

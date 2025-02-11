@@ -9,15 +9,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use App\Models\News;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ToolController extends Controller
 {
-
+    /**
+     * Display the home page with paginated tools.
+     */
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -35,15 +33,15 @@ class ToolController extends Controller
             });
 
         $allTools = $toolsQuery->get();
-        $preferences = collect(json_decode($user->tool_preferences, true) ?? []);
 
+        // (Optional) Adjust each tool based on user preferences
+        $preferences = collect(json_decode($user->tool_preferences, true) ?? []);
         $allTools->transform(function ($tool) use ($preferences) {
             $pref = $preferences->firstWhere('id', $tool->id);
             $tool->visible = $pref['visible'] ?? true;
             $tool->order = $pref['order'] ?? $tool->id;
             return $tool;
         });
-
         $visibleTools = $allTools->filter(fn($tool) => $tool->visible)->sortBy('order');
 
         $page = LengthAwarePaginator::resolveCurrentPage();
@@ -56,42 +54,64 @@ class ToolController extends Controller
             ['path' => LengthAwarePaginator::resolveCurrentPath()]
         );
 
-        $techNews = News::inRandomOrder()->limit(5)->get();
+        // Retrieve some tech news, etc.
+        $techNews = \App\Models\News::inRandomOrder()->limit(5)->get();
 
         return view('home', [
-            'tools' => $paginatedTools,
-            'allTools' => $allTools->sortBy('order'),
-            'search' => $search,
-            'techNews' => $techNews,
+            'tools'     => $paginatedTools,
+            'allTools'  => $allTools->sortBy('order'),
+            'search'    => $search,
+            'techNews'  => $techNews,
         ]);
     }
 
+    /**
+     * Display the manage page for tools.
+     */
     public function manage(Request $request, Tool $tool = null)
     {
-        $tools = Tool::with('groups')->get();
-        $users = User::with('groups')->get();
+        // Get the search term (if any) from the query string.
+        $search = $request->input('search', '');
+
+        // Build a query for tools and apply search filtering.
+        $toolsQuery = Tool::with('groups');
+        if ($search) {
+            $toolsQuery->where('name', 'like', "%{$search}%");
+        }
+        // Paginate the results so that $tools is a paginator instance.
+        $tools = $toolsQuery->paginate(8);
+
+        // Retrieve users using the UserController's filtering (if needed).
+        $users = \App\Http\Controllers\UserController::getFilteredUsers($request);
+
+        // Get additional required data.
         $groups = Group::pluck('groupname');
         $colours = Colour::all();
 
+        // If editing a tool, prepare its associated group names.
         $toolGroups = '';
         if ($tool) {
             $toolGroups = $tool->groups->pluck('groupname')->implode(', ');
         }
 
+        // Flash the active tab for the manage view.
         session()->flash('activeTab', 'tool-manager');
 
-        return view('manage', compact('tools', 'tool', 'toolGroups', 'users', 'groups', 'colours'));
+        // Pass all variables to the manage view.
+        return view('manage', compact('tools', 'tool', 'toolGroups', 'users', 'groups', 'colours', 'search'));
     }
 
+    /**
+     * Store a newly created tool.
+     */
     public function store(Request $request)
     {
-
         $request->validate([
-            'name' => 'required|string|max:255',
-            'url' => 'required|url',
-            'info' => 'nullable|string|max:2000',
+            'name'   => 'required|string|max:255',
+            'url'    => 'required|url',
+            'info'   => 'nullable|string|max:2000',
             'colour' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'groups' => 'nullable|string',
         ]);
 
@@ -101,13 +121,12 @@ class ToolController extends Controller
         }
 
         $tool = Tool::create([
-            'name' => $request->name,
-            'url' => $request->url,
-            'info' => $request->info,
-            'colour' => $request->colour,
-            'image' => $imagePath,
+            'name'      => $request->name,
+            'url'       => $request->url,
+            'info'      => $request->info,
+            'colour'    => $request->colour,
+            'image'     => $imagePath,
             'allGroups' => $request->boolean('allGroups'),
-
         ]);
 
         if (!$request->boolean('allGroups') && $request->has('groups')) {
@@ -115,18 +134,21 @@ class ToolController extends Controller
             $tool->groups()->sync($groupIds);
         }
 
-        return redirect()->route('manage', ['tool' => $tool->id])->with('success', 'Tool created successfully.');
+        return redirect()->route('manage', ['tool' => $tool->id])
+            ->with('success', 'Tool created successfully.');
     }
 
+    /**
+     * Update the specified tool.
+     */
     public function update(Request $request, Tool $tool)
     {
-
         $request->validate([
-            'name' => 'required|string|max:255',
-            'url' => 'required|url',
-            'info' => 'nullable|string|max:2000',
+            'name'   => 'required|string|max:255',
+            'url'    => 'required|url',
+            'info'   => 'nullable|string|max:2000',
             'colour' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'groups' => 'nullable|string',
             'allGroups' => 'nullable|boolean',
         ]);
@@ -137,11 +159,11 @@ class ToolController extends Controller
         }
 
         $tool->update([
-            'name' => $request->name,
-            'url' => $request->url,
-            'info' => $request->info,
-            'colour' => $request->colour,
-            'image' => $imagePath,
+            'name'      => $request->name,
+            'url'       => $request->url,
+            'info'      => $request->info,
+            'colour'    => $request->colour,
+            'image'     => $imagePath,
             'allGroups' => $request->boolean('allGroups'),
         ]);
 
@@ -152,35 +174,38 @@ class ToolController extends Controller
             $tool->groups()->detach();
         }
 
-        return redirect()->route('manage', ['tool' => $tool->id])->with('success', 'Tool updated successfully.');
+        return redirect()->route('manage', ['tool' => $tool->id])
+            ->with('success', 'Tool updated successfully.');
     }
 
-    private function processImageWithIntervention($image)
-    {
-
-        $manager = new ImageManager(new Driver());
-
-        $img = $manager->read($image->getPathname());
-
-        $img->scale(width: 500);
-        $img->scale(height: 500);
-
-        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
-        $imagePath = storage_path('app/public/tools/' . $imageName);
-        $img->toPng()->save($imagePath);
-
-        return 'tools/' . $imageName;
-    }
-
+    /**
+     * Remove the specified tool.
+     */
     public function destroy(Tool $tool)
     {
-
         $tool->groups()->detach();
         $tool->delete();
-
         return redirect()->route('manage')->with('success', 'Tool deleted successfully.');
     }
 
+    /**
+     * Process the uploaded image using Intervention Image.
+     */
+    private function processImageWithIntervention($image)
+    {
+        $manager = new ImageManager(new Driver());
+        $img = $manager->read($image->getPathname());
+        $img->scale(width: 500);
+        $img->scale(height: 500);
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+        $imagePath = storage_path('app/public/tools/' . $imageName);
+        $img->toPng()->save($imagePath);
+        return 'tools/' . $imageName;
+    }
+
+    /**
+     * Convert comma-separated group names into an array of group IDs.
+     */
     private function getGroupIdsFromNames($groupNames)
     {
         $groupNamesArray = array_map('trim', explode(',', $groupNames));

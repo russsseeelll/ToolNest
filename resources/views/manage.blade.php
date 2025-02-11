@@ -2,7 +2,6 @@
 
 @section('title', 'Management', env('ORG_NAME', 'OrgName') . ' Tools')
 
-
 @section('content')
     <!-- Flash Messages -->
     @if(session('success'))
@@ -54,7 +53,6 @@
     <div id="user-manager-section" class="flex w-full mt-6 {{ isset($tool) ? 'hidden' : '' }}">
         @include('partials.user_manager', ['search' => $search ?? ''])
     </div>
-
 @endsection
 
 @section('scripts')
@@ -103,7 +101,6 @@
                 });
             }
 
-
             function handleGroupInput(inputField, suggestionBox, groups) {
                 let query = inputField.val().toLowerCase().split(',').pop().trim();
                 suggestionBox.empty().hide();
@@ -144,7 +141,7 @@
             }, 5000);
         });
 
-        //all group logic
+        // All group logic
         $(document).ready(function() {
             const allGroupsCheckbox = $('#allGroups');
             const groupsInput = $('#tool-groups');
@@ -180,20 +177,73 @@
             });
         });
 
+        // NEW DROPDOWN LOGIC: Detach dropdowns to avoid clipping issues.
+        const originalDropdownParents = {};
+
         function toggleDropdown(userId) {
             const dropdownMenu = document.getElementById(`dropdown-menu-${userId}`);
-            dropdownMenu.classList.toggle('hidden');
+            const isHidden = dropdownMenu.classList.contains('hidden');
 
-            // Adjust positioning for visibility
-            const rect = dropdownMenu.getBoundingClientRect();
-            if (rect.bottom > window.innerHeight) {
-                dropdownMenu.style.top = 'auto';
-                dropdownMenu.style.bottom = '100%';
+            if (isHidden) {
+                // Store the original parent if not already stored.
+                if (!originalDropdownParents[userId]) {
+                    originalDropdownParents[userId] = dropdownMenu.parentNode;
+                }
+                // Open dropdown: remove hidden class.
+                dropdownMenu.classList.remove('hidden');
+                // Detach dropdown and append it to document.body.
+                document.body.appendChild(dropdownMenu);
+
+                // Position dropdown relative to the cog button.
+                const button = document.getElementById(`dropdown-icon-${userId}`);
+                const rect = button.getBoundingClientRect();
+                let top = rect.bottom; // try to position below the button
+
+                // If dropdown overflows at bottom, position above the button.
+                if (top + dropdownMenu.offsetHeight > window.innerHeight) {
+                    top = rect.top - dropdownMenu.offsetHeight;
+                }
+                dropdownMenu.style.position = 'fixed';
+                dropdownMenu.style.top = top + 'px';
+                dropdownMenu.style.left = rect.left + 'px';
+                dropdownMenu.style.zIndex = '1000';
             } else {
-                dropdownMenu.style.top = '100%';
-                dropdownMenu.style.bottom = 'auto';
+                // Close dropdown: add hidden class and reset styles.
+                dropdownMenu.classList.add('hidden');
+                dropdownMenu.style.position = '';
+                dropdownMenu.style.top = '';
+                dropdownMenu.style.left = '';
+                dropdownMenu.style.zIndex = '';
+
+                // Reattach the dropdown back to its original parent.
+                if (originalDropdownParents[userId]) {
+                    originalDropdownParents[userId].appendChild(dropdownMenu);
+                }
             }
         }
+
+        // Close dropdown if clicking outside.
+        document.addEventListener('click', function (event) {
+            document.querySelectorAll('[id^="dropdown-icon-"]').forEach(function(button) {
+                const userId = button.id.split('-').pop();
+                const dropdownMenu = document.getElementById(`dropdown-menu-${userId}`);
+                if (!button.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    if (!dropdownMenu.classList.contains('hidden')) {
+                        toggleDropdown(userId);
+                    }
+                }
+            });
+        });
+
+        // Optional: Close any open dropdown on scroll.
+        window.addEventListener('scroll', function() {
+            document.querySelectorAll('[id^="dropdown-menu-"]').forEach(function(dropdownMenu) {
+                if (!dropdownMenu.classList.contains('hidden')) {
+                    const userId = dropdownMenu.id.split('-').pop();
+                    toggleDropdown(userId);
+                }
+            });
+        });
 
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -204,16 +254,5 @@
             const modal = document.getElementById(modalId);
             modal.classList.add('hidden');
         }
-
-        document.addEventListener('click', function (event) {
-            const dropdownButtons = document.querySelectorAll('[id^="dropdown-icon-"]');
-            dropdownButtons.forEach(button => {
-                const userId = button.id.split('-').pop();
-                const dropdownMenu = document.getElementById(`dropdown-menu-${userId}`);
-                if (!button.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                    dropdownMenu.classList.add('hidden');
-                }
-            });
-        });
     </script>
 @endsection
